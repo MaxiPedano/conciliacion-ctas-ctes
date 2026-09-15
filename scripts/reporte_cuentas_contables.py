@@ -323,7 +323,7 @@ def generate_report():
     <section class="section">
         <h2>Total por Cuenta Contable</h2>
         <p>El total se recalcula según el rango de fechas seleccionado en <strong>Registros Involucrados</strong>. La fila <strong>SIN CUENTA CONTABLE</strong> identifica registros sin <code>cuentacontableid</code>.</p>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Total por Cuenta Contable">
             <thead><tr><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>registros</th><th>total</th><th>primera fecha</th><th>última fecha</th></tr></thead>
             <tbody id="account-summary-body">{account_html}</tbody>
         </table></div>
@@ -359,7 +359,7 @@ def generate_report():
             </label>
         </div>
         <p id="detail-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table id="detail-table">
+        <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros Involucrados">
             <thead><tr><th>registrocab</th><th>fecha</th><th>clientname</th><th>referencia</th><th>flujo</th><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>totalprecio</th><th>impuestos</th></tr></thead>
             <tbody>{detail_html}<tr id="no-results" class="empty-row"><td colspan="10">No hay registros para los filtros seleccionados.</td></tr></tbody>
         </table></div>
@@ -367,7 +367,7 @@ def generate_report():
 
     <section class="section">
         <h2>Resumen por Flujo y Asignación</h2>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Flujo y Asignacion">
             <thead><tr><th>flowid</th><th>flujo</th><th>estado</th><th>registros</th><th>total</th></tr></thead>
             <tbody id="flow-summary-body">{flow_html}</tbody>
         </table></div>
@@ -558,6 +558,7 @@ def generate_report():
     applyDetailFilters();
 }}());
 </script>
+<script src="assets/export_excel.js"></script>
 </body>
 </html>
 """

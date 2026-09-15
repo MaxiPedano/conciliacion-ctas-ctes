@@ -426,7 +426,7 @@ def generate_report():
                 <input id="date-to" type="date">
             </label>
         </div>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Cliente">
             <thead><tr><th>clientid</th><th>cliente</th><th>registros</th><th>haber</th><th>debe</th><th>saldo</th><th>primera fecha</th><th>última fecha</th></tr></thead>
             <tbody id="client-summary-body">{client_summary_html}</tbody>
         </table></div>
@@ -451,7 +451,7 @@ def generate_report():
             <button id="clear-filters" type="button">Limpiar filtros</button>
         </div>
         <p id="detail-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table id="detail-table">
+        <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros que Componen el Saldo">
             <thead><tr><th>registrocab</th><th>fecha</th><th>clientid</th><th>cliente</th><th>referencia</th><th>fecha compromiso</th><th>flujo</th><th>referencia cta contable</th><th>haber</th><th>debe</th><th>saldo acumulado</th><th>saldo total</th></tr></thead>
             <tbody>{detail_html}<tr id="no-results" class="empty-row"><td colspan="12">No hay registros para los filtros seleccionados.</td></tr></tbody>
         </table></div>
@@ -615,6 +615,7 @@ def generate_report():
     render();
 }}());
 </script>
+<script src="assets/export_excel.js"></script>
 </body>
 </html>
 """

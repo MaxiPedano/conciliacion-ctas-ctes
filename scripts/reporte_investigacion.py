@@ -525,7 +525,7 @@ def generate_html_report():
             <button id="clear-classification-filters" type="button">Limpiar fechas</button>
         </div>
         <p id="classification-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Clasificacion Final de Egresos">
             <thead><tr><th>perfil_tipo</th><th>flow_name</th><th>registros</th><th>total_monto</th></tr></thead>
             <tbody id="classification-body">{classification_html}</tbody>
         </table></div>
@@ -561,7 +561,7 @@ def generate_html_report():
         </div>
         <p id="filter-summary" class="filter-summary"></p>
         <div class="table-wrap">
-            <table id="detail-table">
+            <table id="detail-table" data-excel-table data-excel-title="Registros Involucrados">
                 <thead><tr>
                     <th>registrocab</th><th>clientid</th><th>clientname</th><th>fecha</th>
                     <th>referencia</th><th>flujo</th><th>totalprecio</th><th>impuestos</th><th>perfil_tipo</th>
@@ -586,7 +586,7 @@ def generate_html_report():
             <button id="clear-profile-filters" type="button">Limpiar fechas</button>
         </div>
         <p id="profile-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Perfil">
             <thead><tr><th>clientid</th><th>clientname</th><th>Razón Social</th><th>Tipo</th><th>Registros</th><th>Monto Total</th><th>Primera Fecha</th><th>Última Fecha</th></tr></thead>
             <tbody id="profile-summary-body">{profile_html}</tbody>
         </table></div>
@@ -595,7 +595,7 @@ def generate_html_report():
     <section class="section">
         <h2>Registros sin clientid</h2>
         <p>{format_integer(len(df_sin_clientid))} registros del flujo 11332 son transferencias internas de caja y no tienen proveedor asociado. Se muestran aquí, pero no se incluyen en la clasificación porcentual.</p>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Registros sin clientid">
             <thead><tr><th>registrocab</th><th>fecha</th><th>referencia</th><th>flowid</th><th>flujo</th><th>totalprecio</th><th>impuestos</th></tr></thead>
             <tbody>{unassigned_html}</tbody>
         </table></div>
@@ -604,7 +604,7 @@ def generate_html_report():
     <section class="section">
         <h2>Perfiles Sin Categoría (Resueltos)</h2>
         <p>Estos perfiles fueron investigados por el texto de sus referencias y quedaron identificados operacionalmente.</p>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Perfiles Sin Categoria Resueltos">
             <thead><tr><th>clientid</th><th>clientname</th><th>Registros</th><th>Tipo Detectado</th></tr></thead>
             <tbody>{resolved_html}</tbody>
         </table></div>
@@ -866,6 +866,7 @@ def generate_html_report():
     renderProfileSummary();
 }}());
 </script>
+<script src="assets/export_excel.js"></script>
 </body>
 </html>
 """

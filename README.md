@@ -39,6 +39,10 @@ $env:AVANZIA_DB_PASSWORD = "<password-local>"
 
 El informe maestro para navegar los reportes es `index.html`.
 
+Todos los listados HTML incluyen botones para descargar en Excel los registros
+visibles según los filtros o la totalidad del listado (`.xls`, compatible con
+Excel).
+
 ### 1. Carga de datos (paso 1)
 
 ```powershell

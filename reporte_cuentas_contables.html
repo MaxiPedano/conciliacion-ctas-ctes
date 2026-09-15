@@ -50,7 +50,7 @@
         <h1>REPORTE DE CUENTAS CONTABLES</h1>
         <p class="subtitle">Egresos de proveedores y flujos relacionados</p>
         <p class="subtitle">Flujos: 10150, 10303, 11344, 11433 y 11332</p>
-        <p class="subtitle">Generado: 15/09/2026 01:21</p>
+        <p class="subtitle">Generado: 15/09/2026 08:16</p>
     </header>
 
     <section class="section">
@@ -67,7 +67,7 @@
     <section class="section">
         <h2>Total por Cuenta Contable</h2>
         <p>El total se recalcula según el rango de fechas seleccionado en <strong>Registros Involucrados</strong>. La fila <strong>SIN CUENTA CONTABLE</strong> identifica registros sin <code>cuentacontableid</code>.</p>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Total por Cuenta Contable">
             <thead><tr><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>registros</th><th>total</th><th>primera fecha</th><th>última fecha</th></tr></thead>
             <tbody id="account-summary-body"><tr><td>10996</td><td>4.1.2/03/03 - Costo de Ventas Productos Terminados</td><td><span class="badge badge-assigned">Con cuenta contable</span></td><td>17</td><td class="currency">$33,707,462.97</td><td>31/08/2024</td><td>19/08/2026</td></tr>
 <tr><td>10997</td><td>4.2.1/03/01 - Costo de Ventas Mercaderías</td><td><span class="badge badge-assigned">Con cuenta contable</span></td><td>2</td><td class="currency">$5,497,167.47</td><td>09/09/2024</td><td>10/08/2026</td></tr>
@@ -194,7 +194,7 @@
             </label>
         </div>
         <p id="detail-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table id="detail-table">
+        <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros Involucrados">
             <thead><tr><th>registrocab</th><th>fecha</th><th>clientname</th><th>referencia</th><th>flujo</th><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>totalprecio</th><th>impuestos</th></tr></thead>
             <tbody><tr class="detail-row" data-date="0202-12-24" data-accountid="11396.0" data-account="5.2.1/03/07 - Gastos Varios comercialización - CONDISEÑO" data-status="Con cuenta contable" data-flow="Comprobantes Proveedores" data-clientname="Zofracor Sa" data-reference="FCA004-00023638 24/12/2025" data-amount="419873.6300"><td>16283</td><td>24/12/0202</td><td>Zofracor Sa</td><td>FCA004-00023638 24/12/2025</td><td>Comprobantes Proveedores</td><td>11396</td><td>5.2.1/03/07 - Gastos Varios comercialización - CONDISEÑO</td><td><span class="badge badge-assigned">Con cuenta contable</span></td><td class="currency">$419,873.63</td><td class="currency">$419,873.63</td></tr>
 <tr class="detail-row" data-date="2024-07-21" data-accountid="" data-account="SIN CUENTA CONTABLE" data-status="Sin cuenta contable" data-flow="CAJA: Egresos" data-clientname="Genérico" data-reference="Regalo Garante amigo Julian p3" data-amount="21890.0000"><td>9727</td><td>21/07/2024</td><td>Genérico</td><td>Regalo Garante amigo Julian p3</td><td>CAJA: Egresos</td><td>-</td><td>SIN CUENTA CONTABLE</td><td><span class="badge badge-unassigned">Sin cuenta contable</span></td><td class="currency">$21,890.00</td><td class="currency">$21,890.00</td></tr>
@@ -5605,7 +5605,7 @@
 
     <section class="section">
         <h2>Resumen por Flujo y Asignación</h2>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Flujo y Asignacion">
             <thead><tr><th>flowid</th><th>flujo</th><th>estado</th><th>registros</th><th>total</th></tr></thead>
             <tbody id="flow-summary-body"><tr><td>10150</td><td>CAJA: Egresos</td><td><span class="badge badge-unassigned">Sin cuenta contable</span></td><td>1,749</td><td class="currency">$2,331,991,223.83</td></tr>
 <tr><td>10303</td><td>Comprobantes Proveedores</td><td><span class="badge badge-assigned">Con cuenta contable</span></td><td>1,841</td><td class="currency">$2,169,472,646.56</td></tr>
@@ -5848,5 +5848,6 @@ ORDER BY rc.flowid, estado_cuenta;</pre></details>
     applyDetailFilters();
 }());
 </script>
+<script src="assets/export_excel.js"></script>
 </body>
 </html>

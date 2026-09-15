@@ -46,7 +46,7 @@
         <h1>CUENTA CORRIENTE</h1>
         <p class="subtitle">Detalle de todos los registros que componen cada saldo</p>
         <p class="subtitle">La cuenta se calcula como Haber - Debe según el rango seleccionado</p>
-        <p class="subtitle">Generado: 15/09/2026 01:22</p>
+        <p class="subtitle">Generado: 15/09/2026 08:16</p>
     </header>
 
     <section class="section">
@@ -77,7 +77,7 @@
                 <input id="date-to" type="date">
             </label>
         </div>
-        <div class="table-wrap"><table>
+        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Cliente">
             <thead><tr><th>clientid</th><th>cliente</th><th>registros</th><th>haber</th><th>debe</th><th>saldo</th><th>primera fecha</th><th>última fecha</th></tr></thead>
             <tbody id="client-summary-body"><tr><td>-</td><td>SIN CLIENTE</td><td>876</td><td class="currency">$517,357,493.35</td><td class="currency">$59,704,553.83</td><td class="currency">$457,652,939.52</td><td>15/07/2024</td><td>14/09/2026</td></tr>
 <tr><td>608.0</td><td>AFIP</td><td>232</td><td class="currency">$250,435,852.63</td><td class="currency">$420,125,672.12</td><td class="currency">$-169,689,819.49</td><td>19/09/2024</td><td>14/09/2026</td></tr>
@@ -906,7 +906,7 @@
             <button id="clear-filters" type="button">Limpiar filtros</button>
         </div>
         <p id="detail-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table id="detail-table">
+        <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros que Componen el Saldo">
             <thead><tr><th>registrocab</th><th>fecha</th><th>clientid</th><th>cliente</th><th>referencia</th><th>fecha compromiso</th><th>flujo</th><th>referencia cta contable</th><th>haber</th><th>debe</th><th>saldo acumulado</th><th>saldo total</th></tr></thead>
             <tbody><tr class="detail-row" data-id="8715" data-date="2024-09-17" data-clientid="358.0" data-clientname="Flows Manager" data-reference="FA0095 Cuota mensual FLOW" data-account="11060 - 4.2.1/02/10 - Gastos Varios administración" data-flow="Comprobantes Proveedores" data-haber="98826.75" data-debe="0.0"><td>8715</td><td>17/09/2024</td><td>358.0</td><td>Flows Manager</td><td>FA0095 Cuota mensual FLOW</td><td>-</td><td>Comprobantes Proveedores</td><td>11060 - 4.2.1/02/10 - Gastos Varios administración</td><td class="currency">$98,826.75</td><td class="currency">$0.00</td><td class="currency running-balance">$98,826.75</td><td class="currency total-balance">$-2,804,708.20</td></tr>
 <tr class="detail-row" data-id="9099" data-date="2024-09-18" data-clientid="358.0" data-clientname="Flows Manager" data-reference="Pago mes Flow" data-account="" data-flow="CAJA: Egresos" data-haber="0.0" data-debe="98826.75"><td>9099</td><td>18/09/2024</td><td>358.0</td><td>Flows Manager</td><td>Pago mes Flow</td><td>-</td><td>CAJA: Egresos</td><td>-</td><td class="currency">$0.00</td><td class="currency">$98,826.75</td><td class="currency running-balance">$0.00</td><td class="currency total-balance">$-2,804,708.20</td></tr>
@@ -11876,5 +11876,6 @@ ORDER BY clientid, fecha, id;</pre></details>
     render();
 }());
 </script>
+<script src="assets/export_excel.js"></script>
 </body>
 </html>

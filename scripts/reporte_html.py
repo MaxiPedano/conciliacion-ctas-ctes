@@ -537,7 +537,7 @@ function ventanasHTML(p){{
            '<td style="text-align:right">'+cb+'</td></tr>';
   }}).join("");
   return '<div class="ventanas"><h3>Indicadores por período (saldo cierre cta cte / suma contable)</h3>'+
-         '<table class="tabla tabla-v"><thead><tr>'+
+         '<table class="tabla tabla-v" data-excel-table data-excel-title="Indicadores por Periodo"><thead><tr>'+
          '<th>Período</th><th>Saldo cta cte (cierre)</th><th>Suma contable</th>'+
          '</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }}
@@ -546,6 +546,10 @@ function render(){{
   const id = document.getElementById("provSel").value;
   const p = PROV[id];
   if(!p) return;
+  const ccFiltered = prepList(p.movs_cc);
+  const cbFiltered = prepList(p.movs_cb);
+  const ccHeader = '<thead><tr><th>Fecha</th><th>Tipo</th><th>Referencia</th><th>Haber</th><th>Debe</th><th>Importe</th><th>Saldo Acum</th><th>Flujo</th><th>Estado</th></tr></thead>';
+  const cbHeader = '<thead><tr><th>Fecha</th><th>Referencia</th><th>Total Precio</th><th>Impuestos</th><th>Cuenta Contable</th><th>Estado</th></tr></thead>';
   const difPct = (p.diferencia_pct !== 0 && !isNaN(p.diferencia_pct)) ? p.diferencia_pct.toFixed(1)+"%" : "-";
   const html =
     '<div class="fichas">'+
@@ -563,18 +567,18 @@ function render(){{
       '<button id="tb-cc" class="'+(currentTab===0?'active':'')+'" onclick="setTab(0)">Cuenta Corriente ('+(p.n_cc)+')</button>'+
       '<button id="tb-cb" class="'+(currentTab===1?'active':'')+'" onclick="setTab(1)">Mayor Contable ('+(p.n_cb)+')</button>'+
     '</div>'+
-    '<div id="sec-cc" class="mov-section'+(currentTab===0?' active':'')+'"><table class="tabla"><thead><tr>'+
-      '<th>Fecha</th><th>Tipo</th><th>Referencia</th><th>Haber</th><th>Debe</th><th>Importe</th><th>Saldo Acum</th><th>Flujo</th><th>Estado</th>'+
-      '</tr></thead><tbody>'+
-      prepList(p.movs_cc).map(movRowCC).join("")+
+    '<div id="sec-cc" class="mov-section'+(currentTab===0?' active':'')+'"><table id="current-cc-table" class="tabla" data-excel-table data-excel-title="Cuenta Corriente" data-excel-all-source="all-cc-table">'+
+      ccHeader+'<tbody>'+ccFiltered.map(movRowCC).join("")+
       '</tbody></table>'+
-      '<div class="rowcount">'+prepList(p.movs_cc).length+' de '+p.movs_cc.length+' movimientos</div></div>'+
-    '<div id="sec-cb" class="mov-section'+(currentTab===1?' active':'')+'"><table class="tabla"><thead><tr>'+
-      '<th>Fecha</th><th>Referencia</th><th>Total Precio</th><th>Impuestos</th><th>Cuenta Contable</th><th>Estado</th>'+
-      '</tr></thead><tbody>'+
-      prepList(p.movs_cb).map(movRowCB).join("")+
+      '<div class="rowcount">'+ccFiltered.length+' de '+p.movs_cc.length+' movimientos</div>'+
+      '<table id="all-cc-table" class="tabla" style="display:none">'+ccHeader+'<tbody>'+p.movs_cc.map(movRowCC).join("")+
+      '</tbody></table></div>'+
+    '<div id="sec-cb" class="mov-section'+(currentTab===1?' active':'')+'"><table id="current-cb-table" class="tabla" data-excel-table data-excel-title="Mayor Contable" data-excel-all-source="all-cb-table">'+
+      cbHeader+'<tbody>'+cbFiltered.map(movRowCB).join("")+
       '</tbody></table>'+
-      '<div class="rowcount">'+prepList(p.movs_cb).length+' de '+p.movs_cb.length+' movimientos</div></div>';
+      '<div class="rowcount">'+cbFiltered.length+' de '+p.movs_cb.length+' movimientos</div>'+
+      '<table id="all-cb-table" class="tabla" style="display:none">'+cbHeader+'<tbody>'+p.movs_cb.map(movRowCB).join("")+
+      '</tbody></table></div>';
   document.getElementById("detail").innerHTML = html;
 }}
 
@@ -583,6 +587,7 @@ function setTab(which){{
   render();
 }}
 </script>
+<script src="assets/export_excel.js"></script>
 </body>
 </html>
 """
