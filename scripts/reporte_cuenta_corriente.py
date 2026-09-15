@@ -426,9 +426,12 @@ def generate_report():
                 <input id="date-to" type="date">
             </label>
         </div>
-        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Cliente">
+        <div class="table-wrap"><table id="client-summary-table" data-excel-table data-excel-title="Resumen por Cliente" data-excel-all-source="client-summary-all-table">
             <thead><tr><th>clientid</th><th>cliente</th><th>registros</th><th>haber</th><th>debe</th><th>saldo</th><th>primera fecha</th><th>última fecha</th></tr></thead>
             <tbody id="client-summary-body">{client_summary_html}</tbody>
+        </table><table id="client-summary-all-table" style="display:none">
+            <thead><tr><th>clientid</th><th>cliente</th><th>registros</th><th>haber</th><th>debe</th><th>saldo</th><th>primera fecha</th><th>última fecha</th></tr></thead>
+            <tbody>{client_summary_html}</tbody>
         </table></div>
     </section>
 

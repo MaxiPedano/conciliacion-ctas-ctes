@@ -323,9 +323,12 @@ def generate_report():
     <section class="section">
         <h2>Total por Cuenta Contable</h2>
         <p>El total se recalcula según el rango de fechas seleccionado en <strong>Registros Involucrados</strong>. La fila <strong>SIN CUENTA CONTABLE</strong> identifica registros sin <code>cuentacontableid</code>.</p>
-        <div class="table-wrap"><table data-excel-table data-excel-title="Total por Cuenta Contable">
+        <div class="table-wrap"><table id="account-summary-table" data-excel-table data-excel-title="Total por Cuenta Contable" data-excel-all-source="account-summary-all-table">
             <thead><tr><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>registros</th><th>total</th><th>primera fecha</th><th>última fecha</th></tr></thead>
             <tbody id="account-summary-body">{account_html}</tbody>
+        </table><table id="account-summary-all-table" style="display:none">
+            <thead><tr><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>registros</th><th>total</th><th>primera fecha</th><th>última fecha</th></tr></thead>
+            <tbody>{account_html}</tbody>
         </table></div>
     </section>
 
@@ -367,9 +370,12 @@ def generate_report():
 
     <section class="section">
         <h2>Resumen por Flujo y Asignación</h2>
-        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Flujo y Asignacion">
+        <div class="table-wrap"><table id="flow-summary-table" data-excel-table data-excel-title="Resumen por Flujo y Asignacion" data-excel-all-source="flow-summary-all-table">
             <thead><tr><th>flowid</th><th>flujo</th><th>estado</th><th>registros</th><th>total</th></tr></thead>
             <tbody id="flow-summary-body">{flow_html}</tbody>
+        </table><table id="flow-summary-all-table" style="display:none">
+            <thead><tr><th>flowid</th><th>flujo</th><th>estado</th><th>registros</th><th>total</th></tr></thead>
+            <tbody>{flow_html}</tbody>
         </table></div>
     </section>
 

@@ -48,8 +48,28 @@
         URL.revokeObjectURL(url);
     }
 
+    let sourceSequence = 0;
+
+    function ensureAllSource(table) {
+        if (table.dataset.excelAllSource) return;
+        sourceSequence += 1;
+        const source = table.cloneNode(true);
+        const sourceId = "excel-all-source-" + sourceSequence;
+        source.querySelectorAll("[id]").forEach(function (element) {
+            element.removeAttribute("id");
+        });
+        source.id = sourceId;
+        source.removeAttribute("data-excel-table");
+        source.removeAttribute("data-excel-attached");
+        source.style.display = "none";
+        source.setAttribute("aria-hidden", "true");
+        table.dataset.excelAllSource = sourceId;
+        table.parentNode.insertBefore(source, table.nextSibling);
+    }
+
     function addToolbar(table) {
         if (table.dataset.excelAttached === "true") return;
+        ensureAllSource(table);
         table.dataset.excelAttached = "true";
         const toolbar = document.createElement("div");
         toolbar.className = "excel-toolbar";

@@ -525,9 +525,12 @@ def generate_html_report():
             <button id="clear-classification-filters" type="button">Limpiar fechas</button>
         </div>
         <p id="classification-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table data-excel-table data-excel-title="Clasificacion Final de Egresos">
+        <div class="table-wrap"><table id="classification-table" data-excel-table data-excel-title="Clasificacion Final de Egresos" data-excel-all-source="classification-all-table">
             <thead><tr><th>perfil_tipo</th><th>flow_name</th><th>registros</th><th>total_monto</th></tr></thead>
             <tbody id="classification-body">{classification_html}</tbody>
+        </table><table id="classification-all-table" style="display:none">
+            <thead><tr><th>perfil_tipo</th><th>flow_name</th><th>registros</th><th>total_monto</th></tr></thead>
+            <tbody>{classification_html}</tbody>
         </table></div>
         <p>Los montos se muestran con dos decimales, tomados directamente de <code>registrocab.totalprecio</code>.</p>
     </section>
@@ -586,9 +589,12 @@ def generate_html_report():
             <button id="clear-profile-filters" type="button">Limpiar fechas</button>
         </div>
         <p id="profile-summary" class="filter-summary"></p>
-        <div class="table-wrap"><table data-excel-table data-excel-title="Resumen por Perfil">
+        <div class="table-wrap"><table id="profile-summary-table" data-excel-table data-excel-title="Resumen por Perfil" data-excel-all-source="profile-summary-all-table">
             <thead><tr><th>clientid</th><th>clientname</th><th>Razón Social</th><th>Tipo</th><th>Registros</th><th>Monto Total</th><th>Primera Fecha</th><th>Última Fecha</th></tr></thead>
             <tbody id="profile-summary-body">{profile_html}</tbody>
+        </table><table id="profile-summary-all-table" style="display:none">
+            <thead><tr><th>clientid</th><th>clientname</th><th>Razón Social</th><th>Tipo</th><th>Registros</th><th>Monto Total</th><th>Primera Fecha</th><th>Última Fecha</th></tr></thead>
+            <tbody>{profile_html}</tbody>
         </table></div>
     </section>
 
