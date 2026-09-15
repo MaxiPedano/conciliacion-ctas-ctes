@@ -1,0 +1,100 @@
+{
+  "schema": "test9000",
+  "flujos_conciliacion": {
+    "cta_cte": [
+      {
+        "macroid": 11344,
+        "nombre": "CAJA: Egresos Juan",
+        "descripcion": "Egresos con cuenta corriente",
+        "records": 192
+      },
+      {
+        "macroid": 11433,
+        "nombre": "CAJA: Egresos Juan sin Cta. Cte.",
+        "descripcion": "Egresos sin cuenta corriente",
+        "records": 266
+      },
+      {
+        "macroid": 11332,
+        "nombre": "CAJA: Egresos sin cta cte",
+        "descripcion": "Egresos sin cuenta corriente",
+        "records": 1305
+      },
+      {
+        "macroid": 11472,
+        "nombre": "Ajustes negativos",
+        "descripcion": "Ajustes con signo negativo",
+        "records": 98
+      }
+    ],
+    "mayor_contable": [
+      {
+        "macroid": 10303,
+        "nombre": "Comprobantes Proveedores",
+        "descripcion": "Comprobantes de proveedores",
+        "records": 1892
+      },
+      {
+        "macroid": 10150,
+        "nombre": "CAJA: Egresos",
+        "descripcion": "Egresos generales",
+        "records": 1749
+      }
+    ],
+    "otros": [
+      {
+        "macroid": 11328,
+        "nombre": "Vales y saldos",
+        "records": 1515
+      },
+      {
+        "macroid": 10815,
+        "nombre": "CAJA: Ingresos CLIENTE con cta cte",
+        "records": 1376
+      },
+      {
+        "macroid": 10781,
+        "nombre": "VENTA: AVANZIA - (A)",
+        "records": 773
+      },
+      {
+        "macroid": 11331,
+        "nombre": "Compensación entre cajas",
+        "records": 588
+      },
+      {
+        "macroid": 10290,
+        "nombre": "Comprobantes de sueldo EMPLEADOS",
+        "records": 432
+      },
+      {
+        "macroid": 11366,
+        "nombre": "Comprobantes de socios y vendedores",
+        "records": 130
+      },
+      {
+        "macroid": 11473,
+        "nombre": "Ajustes positivos",
+        "records": 60
+      },
+      {
+        "macroid": 11348,
+        "nombre": "REVERSION de EGRESOS de caja",
+        "records": 0
+      }
+    ]
+  },
+  "tablas": {
+    "registrocab": "registrocab",
+    "registrocuerpo": "registrocuerpo",
+    "statusflows": "statusflows",
+    "statuses": "statuses",
+    "categorias": "categorias",
+    "flowpreguntas": "flowpreguntas",
+    "flowrespuestas": "flowrespuestas"
+  },
+  "clasificacion": {
+    "cliente": [1080, 11318, 1094, 11548],
+    "proveedor": [1081, 10685, 11360, 11345]
+  }
+}

@@ -1,0 +1,23 @@
+# Datos contables y respaldos sensibles
+*.csv
+*.pkl
+*.sql
+!docs/*.sql
+*.xlsx
+
+# Salidas antiguas o duplicadas
+consolidado_proveedores/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Herramientas y temporales
+.pytest_cache/
+_tmp_*
+
+# Estructura prevista para datos y resultados generados
+data/
+outputs/
