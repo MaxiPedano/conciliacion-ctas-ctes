@@ -238,21 +238,23 @@
                                 <input id="reference-filter" type="search" placeholder="Texto de referencia">
                             </label>
                         </div>
-                        <div class="step-row" style="margin-top:14px">
-                            <label>Cuenta contable a asignar
-                                <select id="assign-account-select">
-                                    <option value="">-- Elegir cuenta para este lote --</option>
-                                </select>
-                            </label>
-                        </div>
                         <div class="step-actions">
                             <button id="clear-date-filters" type="button" class="btn btn-outline btn-sm">Limpiar filtros</button>
                             <span style="flex:1"></span>
                             <button id="assign-select-all" type="button" class="btn btn-primary">Seleccionar todos los visibles</button>
                             <button id="assign-clear-selection" type="button" class="btn btn-outline">Quitar selección</button>
-                            <button id="assign-btn" type="button" class="btn btn-success">Agregar lote seleccionado</button>
                         </div>
                         <p id="assign-summary" class="filter-summary"></p>
+                        <div class="step-row" style="margin-top:14px; border-top:1px solid #e8eff2; padding-top:14px;">
+                            <label>Cuenta contable a asignar
+                                <select id="assign-account-select">
+                                    <option value="">-- Elegir cuenta para los registros seleccionados --</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="step-actions">
+                            <button id="assign-btn" type="button" class="btn btn-success" disabled>Agregar lote seleccionado</button>
+                        </div>
                         <p id="assign-feedback" class="assignment-feedback" role="status"></p>
                     </div>
                 </div>
