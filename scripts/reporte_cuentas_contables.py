@@ -338,10 +338,42 @@ def generate_report():
         .filters button:disabled {{ opacity: .55; cursor: not-allowed; }}
         .filters button.positive {{ background: #218653; border-color: #218653; }}
         .filters button.negative {{ background: #a94442; border-color: #a94442; }}
-        .assignment-steps {{ margin: 12px 0; padding-left: 22px; }}
-        .assignment-steps li {{ margin-bottom: 6px; }}
-        .batch-list {{ margin: 10px 0; padding-left: 22px; }}
-        .assignment-feedback {{ color: #1b5e20; font-weight: 600; min-height: 1.2em; }}
+        .step-cards {{ display: flex; flex-direction: column; gap: 18px; margin: 18px 0; }}
+        .step-card {{ border: 1px solid #d5e5e9; border-radius: 10px; overflow: hidden; background: white; }}
+        .step-card-header {{ display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: #eef5f7; border-bottom: 1px solid #d5e5e9; }}
+        .step-number {{ display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; color: white; background: #167d9a; font-weight: 700; font-size: .95rem; flex-shrink: 0; }}
+        .step-card-header h4 {{ margin: 0; color: #17324d; font-size: 1rem; }}
+        .step-card-header .step-desc {{ margin: 0; color: #506872; font-size: .82rem; font-weight: 400; }}
+        .step-card-body {{ padding: 18px; }}
+        .step-card-body.no-pad {{ padding: 0; }}
+        .step-row {{ display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }}
+        .step-row > label {{ display: flex; flex-direction: column; gap: 4px; color: #36515e; font-size: .82rem; font-weight: 600; min-width: 220px; flex: 1; }}
+        .step-row > label > select, .step-row > label > input {{ min-height: 40px; padding: 8px 10px; border: 1px solid #b9cbd1; border-radius: 6px; background: white; font: inherit; font-size: .9rem; }}
+        .step-row > label > select {{ font-size: .85rem; }}
+        .step-actions {{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #e8eff2; }}
+        .step-actions.right {{ justify-content: flex-end; }}
+        .btn {{ display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font: inherit; font-size: .85rem; font-weight: 600; white-space: nowrap; text-decoration: none; }}
+        .btn:disabled {{ opacity: .5; cursor: not-allowed; }}
+        .btn-primary {{ background: #167d9a; border-color: #167d9a; color: white; }}
+        .btn-primary:hover:not(:disabled) {{ background: #126579; }}
+        .btn-success {{ background: #218653; border-color: #218653; color: white; }}
+        .btn-success:hover:not(:disabled) {{ background: #1a6b43; }}
+        .btn-danger {{ background: #a94442; border-color: #a94442; color: white; }}
+        .btn-danger:hover:not(:disabled) {{ background: #8c3635; }}
+        .btn-outline {{ background: white; border-color: #b9cbd1; color: #36515e; }}
+        .btn-outline:hover:not(:disabled) {{ background: #f0f6f8; border-color: #8aa3ac; }}
+        .btn-outline.green {{ border-color: #218653; color: #1a6b43; }}
+        .btn-outline.green:hover:not(:disabled) {{ background: #eaf6ef; }}
+        .btn-sm {{ padding: 6px 12px; font-size: .8rem; }}
+        .batch-cards {{ display: flex; flex-direction: column; gap: 8px; }}
+        .batch-card {{ display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f7fafb; border: 1px solid #d5e5e9; border-radius: 8px; font-size: .88rem; }}
+        .batch-card .batch-num {{ display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #167d9a; color: white; font-size: .78rem; font-weight: 700; flex-shrink: 0; }}
+        .batch-card .batch-info {{ flex: 1; }}
+        .batch-card .batch-info strong {{ color: #17324d; }}
+        .batch-card .batch-info .batch-count {{ color: #506872; font-size: .82rem; }}
+        .batch-empty {{ color: #8aa3ac; font-style: italic; padding: 10px 14px; }}
+        .assignment-feedback {{ color: #1b5e20; font-weight: 600; min-height: 1.2em; padding: 8px 0; font-size: .9rem; }}
+        .assignment-feedback.error {{ color: #a94442; }}
         .filter-summary {{ margin: 10px 0; color: #36515e; font-weight: 600; }}
         .empty-row {{ display: none; }}
         details {{ margin: 10px 0; border: 1px solid #dce4e8; border-radius: 6px; }}
@@ -414,37 +446,83 @@ def generate_report():
         </div>
         <p id="detail-summary" class="filter-summary"></p>
         <div id="asignacion-masiva">
-            <h3>Asignación masiva por lotes</h3>
-            <p>El trabajo es por lotes: cada lote agrupa muchos registros con la misma cuenta contable. El informe conserva un <code>UPDATE</code> separado por lote y los combina en una única transacción SQL.</p>
-            <ol class="assignment-steps">
-                <li><strong>Paso 1: filtrar pendientes.</strong> Use Estado = <strong>Sin cuenta contable</strong> y, si necesita, fecha, flujo, perfil o referencia.</li>
-                <li><strong>Paso 2: seleccionar el lote.</strong> Marque las casillas de la columna <strong>Lote</strong> o use <strong>Seleccionar todos los pendientes visibles</strong>.</li>
-                <li><strong>Paso 3: elegir cuenta y agregar el lote.</strong> Seleccione la cuenta y pulse <strong>Agregar lote seleccionado</strong>.</li>
-                <li><strong>Paso 4: repetir.</strong> Cambie los filtros, seleccione otro grupo y agréguelo con otra cuenta. Los lotes anteriores se conservan.</li>
-                <li><strong>Paso 5: verificar y guardar en Flows.</strong> Ingrese el repositorio ejecutor y su token de GitHub. Pulse <strong>Verificar en Flows</strong>, revise el resultado y pulse <strong>Guardar en Flows</strong>. GitHub Actions abre la conexión SSH y actualiza la base. Preparar lotes no modifica Flows.</li>
-            </ol>
-            <div class="filters">
-                <label>Cuenta para el lote actual
-                    <select id="assign-account-select">
-                        <option value="">-- Elegir cuenta para este lote --</option>
-                        {all_account_options}
-                    </select>
-                </label>
-                <button id="assign-select-all" type="button">Seleccionar todos los pendientes visibles</button>
-                <button id="assign-clear-selection" type="button">Quitar selección</button>
-                <button id="assign-btn" class="positive" type="button">Agregar lote seleccionado</button>
-                <button id="assign-undo" type="button">Deshacer último lote</button>
-                <button id="clear-assign-btn" class="negative" type="button">Deshacer todos los lotes</button>
-                <button id="assign-copy" class="positive" type="button">Copiar SQL acumulado</button>
-                <button id="assign-download" class="positive" type="button">Descargar SQL de todos los lotes</button>
+            <div class="step-cards">
+                <div class="step-card">
+                    <div class="step-card-header">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h4>Seleccionar registros</h4>
+                            <p class="step-desc">Filtre los registros sin cuenta contable y seleccione los que desea asignar</p>
+                        </div>
+                    </div>
+                    <div class="step-card-body">
+                        <div class="step-row">
+                            <label>Cuenta contable a asignar
+                                <select id="assign-account-select">
+                                    <option value="">-- Elegir cuenta para este lote --</option>
+                                    {all_account_options}
+                                </select>
+                            </label>
+                        </div>
+                        <div class="step-actions">
+                            <button id="assign-select-all" type="button" class="btn btn-primary">Seleccionar todos los visibles</button>
+                            <button id="assign-clear-selection" type="button" class="btn btn-outline">Quitar selección</button>
+                            <button id="assign-btn" type="button" class="btn btn-success">Agregar lote seleccionado</button>
+                        </div>
+                        <p id="assign-summary" class="filter-summary"></p>
+                        <p id="assign-feedback" class="assignment-feedback" role="status"></p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-card-header">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h4>Lotes preparados</h4>
+                            <p class="step-desc">Revise los lotes antes de enviar. Puede deshacer individualmente o todos.</p>
+                        </div>
+                    </div>
+                    <div class="step-card-body">
+                        <div id="batch-list" class="batch-cards"><p class="batch-empty">Sin lotes preparados.</p></div>
+                        <div class="step-actions">
+                            <button id="assign-undo" type="button" class="btn btn-outline btn-sm">Deshacer último lote</button>
+                            <button id="clear-assign-btn" type="button" class="btn btn-danger btn-sm">Deshacer todos</button>
+                            <span style="flex:1"></span>
+                            <button id="assign-copy" type="button" class="btn btn-outline green btn-sm">Copiar SQL</button>
+                            <button id="assign-download" type="button" class="btn btn-outline green btn-sm">Descargar SQL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-card-header">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h4>Verificar y guardar en Flows</h4>
+                            <p class="step-desc">GitHub Actions abre la conexión SSH y actualiza la base. No modifica nada hasta que guarde.</p>
+                        </div>
+                    </div>
+                    <div class="step-card-body">
+                        <div class="step-row">
+                            <label>Repositorio ejecutor
+                                <input id="flows-repository" type="text" value="MaxiPedano/conciliacion-ctas-ctes">
+                            </label>
+                            <label>Token de GitHub
+                                <input id="flows-github-token" type="password" autocomplete="off" placeholder="Fine-grained PAT: Actions R/W, Checks R">
+                            </label>
+                        </div>
+                        <div class="step-actions">
+                            <button id="flows-verify" type="button" class="btn btn-primary">Verificar en Flows</button>
+                            <button id="flows-save" type="button" class="btn btn-success" disabled>Guardar en Flows</button>
+                            <button id="flows-resume" type="button" class="btn btn-outline" disabled>Consultar ejecución</button>
+                            <a id="flows-run-link" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" hidden>Ver ejecución en GitHub</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p id="assign-summary" class="filter-summary"></p>
-            <p id="assign-feedback" class="assignment-feedback" role="status"></p>
-            <h4>Lotes preparados</h4>
-            <ol id="batch-list" class="batch-list"><li>Sin lotes preparados.</li></ol>
-            <details open>
-                <summary>SQL acumulado para ejecutar en la base de datos</summary>
-                <pre id="sql-output" class="query-box">-- Todavía no hay lotes preparados. Seleccione registros pendientes y agregue el primer lote.</pre>
+            <details>
+                <summary>SQL acumulado para ejecutar manualmente</summary>
+                <pre id="sql-output" class="query-box">-- Todavía no hay lotes preparados. Seleccione registros y agregue el primer lote.</pre>
             </details>
         </div>
         <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros Involucrados">

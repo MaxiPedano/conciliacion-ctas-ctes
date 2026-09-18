@@ -81,15 +81,6 @@
     var busy = false;
     var activeJob = null;
     var actionsClient = null;
-    var connectionPanel = document.createElement('div');
-    connectionPanel.className = 'filters';
-    connectionPanel.innerHTML = '<label>Repositorio ejecutor de GitHub<input id="flows-repository" type="text" value="MaxiPedano/conciliacion-ctas-ctes"></label>' +
-        '<label>Token de GitHub<input id="flows-github-token" type="password" autocomplete="off" placeholder="Fine-grained PAT: Actions R/W, Checks R"></label>' +
-        '<button id="flows-verify" type="button">2. Verificar en Flows</button>' +
-        '<button id="flows-save" class="positive" type="button" disabled>3. Guardar en Flows</button>' +
-        '<button id="flows-resume" type="button" disabled>Consultar ejecución</button>' +
-        '<a id="flows-run-link" target="_blank" rel="noopener noreferrer" hidden>Ver ejecución en GitHub</a>';
-    summary.before(connectionPanel);
     var repositoryInput = document.getElementById('flows-repository');
     var githubToken = document.getElementById('flows-github-token');
     var verifyButton = document.getElementById('flows-verify');
@@ -98,7 +89,9 @@
     var runLink = document.getElementById('flows-run-link');
     var verificationSummary = document.createElement('p');
     verificationSummary.setAttribute('role', 'status');
-    connectionPanel.after(verificationSummary);
+    verificationSummary.className = 'assignment-feedback';
+    var step3Body = verifyButton && verifyButton.closest('.step-card-body');
+    if (step3Body) step3Body.appendChild(verificationSummary);
     try { repositoryInput.value = localStorage.getItem('flows-repository') || repositoryInput.value; } catch (error) { /* Almacenamiento opcional. */ }
     function invalidateVerification() {
         verifiedToken = '';
@@ -108,11 +101,16 @@
     repositoryInput.addEventListener('input', invalidateVerification);
     githubToken.addEventListener('input', invalidateVerification);
 
+    function setFeedback(message, isError) {
+        feedback.textContent = message;
+        feedback.className = 'assignment-feedback' + (isError ? ' error' : '');
+    }
+
     async function runOperation(operation, resume) {
         if (busy) return;
         busy = true;
         refreshSelection();
-        feedback.textContent = 'Esperando GitHub Actions. La conexión SSH se abre durante la ejecución…';
+        setFeedback('Esperando GitHub Actions. La conexión SSH se abre durante la ejecución…');
         try {
             if (!resume) {
                 if (!window.FlowsActions) throw new Error('No se cargó assets/flows_actions.js. Recargue el reporte.');
@@ -127,7 +125,7 @@
                 await actionsClient.dispatch(activeJob);
             }
             var data = await actionsClient.wait(activeJob, function (run) {
-                feedback.textContent = run ? 'GitHub Actions: ' + run.status + '. Esperando el resultado de Flows…' : 'Esperando que GitHub asigne un ejecutor…';
+                setFeedback(run ? 'GitHub Actions: ' + run.status + '. Esperando el resultado de Flows…' : 'Esperando que GitHub asigne un ejecutor…');
                 if (run) runLink.href = 'https://github.com/' + repositoryInput.value.trim() + '/actions/runs/' + run.id;
             });
             if (operation === 'verify') {
@@ -136,7 +134,7 @@
                 verificationSummary.textContent = 'Verificado por SSH en Flows: ' + data.count + ' registros. ' + data.batches.map(function (batch) {
                     return batch.record_ids.length + ' → ' + batch.account_id + ' - ' + batch.account_name;
                 }).join(' · ') + '. Verificación válida por 30 minutos.';
-                feedback.textContent = 'Revise las cuentas verificadas y pulse Guardar en Flows.';
+                setFeedback('Revise las cuentas verificadas y pulse Guardar en Flows.');
             } else {
                 if (data.saved !== true) throw new Error('Actions no confirmó el guardado.');
                 batches.forEach(function (batch) {
@@ -152,13 +150,13 @@
                 batches = [];
                 verifiedToken = '';
                 verificationSummary.textContent = data.count + ' registros confirmados en la base de Flows. Los resúmenes publicados son una instantánea; regenere el reporte para actualizarlos.';
-                feedback.textContent = 'Guardado confirmado en Flows mediante SSH.';
+                setFeedback('Guardado confirmado en Flows mediante SSH.');
                 renderBatches();
             }
             activeJob = null;
         } catch (error) {
             if (error.definitive) activeJob = null;
-            feedback.textContent = error.message + (activeJob ? ' Los lotes se conservan. Pulse Consultar ejecución para recuperar el resultado.' : ' Los lotes se conservan.');
+            setFeedback(error.message + (activeJob ? ' Los lotes se conservan. Pulse Consultar ejecución para recuperar el resultado.' : ' Los lotes se conservan.'), true);
         } finally { busy = false; refreshSelection(); }
     }
 
@@ -244,17 +242,26 @@
     function renderBatches() {
         batchList.replaceChildren();
         if (!batches.length) {
-            var empty = document.createElement('li');
+            var empty = document.createElement('p');
+            empty.className = 'batch-empty';
             empty.textContent = 'Sin lotes preparados.';
             batchList.appendChild(empty);
-            sql.textContent = '-- Todavía no hay lotes preparados. Seleccione registros pendientes y agregue el primer lote.';
+            sql.textContent = '-- Todavía no hay lotes preparados. Seleccione registros y agregue el primer lote.';
         } else {
             var statements = ['-- Asignaciones masivas pendientes', 'BEGIN;'];
             batches.forEach(function (batch, index) {
-                var item = document.createElement('li');
-                item.textContent = 'Lote ' + (index + 1) + ': ' + batch.rows.length.toLocaleString('es-AR') +
-                    ' registros → ' + batch.id + ' - ' + batch.name;
-                batchList.appendChild(item);
+                var card = document.createElement('div');
+                card.className = 'batch-card';
+                var num = document.createElement('span');
+                num.className = 'batch-num';
+                num.textContent = index + 1;
+                var info = document.createElement('span');
+                info.className = 'batch-info';
+                info.innerHTML = '<strong>' + batch.id + ' - ' + batch.name + '</strong><br><span class="batch-count">' +
+                    batch.rows.length.toLocaleString('es-AR') + ' registros</span>';
+                card.appendChild(num);
+                card.appendChild(info);
+                batchList.appendChild(card);
                 var ids = batch.rows
                     .map(function (row) { return canonicalRecordId(row.cells[0].textContent); })
                     .sort(function (a, b) { return Number(a) - Number(b); });
@@ -273,16 +280,16 @@
 
     if (selectAll) selectAll.addEventListener('click', function () {
         visiblePendingRows().forEach(function (row) { checked.add(row); });
-        feedback.textContent = '';
+        setFeedback('');
         refreshSelection();
     });
     if (clearSelection) clearSelection.addEventListener('click', function () {
         checked.clear();
-        feedback.textContent = '';
+        setFeedback('');
         refreshSelection();
     });
     select.addEventListener('change', function () {
-        feedback.textContent = '';
+        setFeedback('');
         refreshSelection();
     });
 
@@ -293,15 +300,15 @@
         var id = canonicalAccountId(select.value);
         var selected = Array.from(checked);
         if (!id || !catalog.has(id)) {
-            feedback.textContent = 'Elegí una cuenta contable válida antes de agregar el lote.';
+            setFeedback('Elegí una cuenta contable válida antes de agregar el lote.', true);
             return;
         }
         if (!selected.length) {
-            feedback.textContent = 'Seleccioná al menos un registro pendiente visible.';
+            setFeedback('Seleccioná al menos un registro pendiente visible.', true);
             return;
         }
         if (selected.some(function (row) { return !canonicalRecordId(row.cells[0].textContent); })) {
-            feedback.textContent = 'El lote contiene un identificador de registro inválido.';
+            setFeedback('El lote contiene un identificador de registro inválido.', true);
             return;
         }
         var name = catalog.get(id);
@@ -316,8 +323,8 @@
             row.cells[7].innerHTML = '<span class="badge badge-pending">Asignación pendiente · lote ' + batches.length + '</span>';
         });
         checked.clear();
-        feedback.textContent = 'Lote ' + batches.length + ' agregado con ' + selected.length.toLocaleString('es-AR') +
-            ' registros. El SQL conserva este lote aunque agregues otros con cuentas distintas.';
+        setFeedback('Lote ' + batches.length + ' agregado con ' + selected.length.toLocaleString('es-AR') +
+            ' registros. Puede agregar más lotes o pasar al paso 2.');
         renderBatches();
     });
 
@@ -340,7 +347,7 @@
         var batch = batches.pop();
         if (!batch) return;
         restore(batch);
-        feedback.textContent = 'Se deshizo el último lote. Los demás lotes siguen preparados.';
+        setFeedback('Se deshizo el último lote. Los demás lotes siguen preparados.');
         renderBatches();
     });
     if (clearBatches) clearBatches.addEventListener('click', function () {
@@ -349,7 +356,7 @@
         if (!window.confirm('¿Deshacer todos los lotes preparados en esta sesión?')) return;
         invalidateVerification();
         batches.splice(0).forEach(restore);
-        feedback.textContent = 'Se deshicieron todos los lotes.';
+        setFeedback('Se deshicieron todos los lotes.');
         renderBatches();
     });
 
@@ -372,16 +379,16 @@
         var text = sql.textContent;
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(function () {
-                feedback.textContent = 'SQL acumulado copiado. Incluye los ' + batches.length + ' lotes preparados.';
+                setFeedback('SQL acumulado copiado. Incluye los ' + batches.length + ' lotes preparados.');
             }, function () {
-                feedback.textContent = fallbackCopy(text)
+                setFeedback(fallbackCopy(text)
                     ? 'SQL acumulado copiado. Incluye los ' + batches.length + ' lotes preparados.'
-                    : 'No se pudo copiar automáticamente; copiá el texto del recuadro SQL.';
+                    : 'No se pudo copiar automáticamente; copiá el texto del recuadro SQL.');
             });
         } else {
-            feedback.textContent = fallbackCopy(text)
+            setFeedback(fallbackCopy(text)
                 ? 'SQL acumulado copiado. Incluye los ' + batches.length + ' lotes preparados.'
-                : 'No se pudo copiar automáticamente; copiá el texto del recuadro SQL.';
+                : 'No se pudo copiar automáticamente; copiá el texto del recuadro SQL.');
         }
     });
     if (downloadSql) downloadSql.addEventListener('click', function () {
@@ -394,7 +401,7 @@
         link.click();
         link.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-        feedback.textContent = 'Archivo SQL descargado con los ' + batches.length + ' lotes preparados.';
+        setFeedback('Archivo SQL descargado con los ' + batches.length + ' lotes preparados.');
     });
 
     var observer = new MutationObserver(refreshSelection);
