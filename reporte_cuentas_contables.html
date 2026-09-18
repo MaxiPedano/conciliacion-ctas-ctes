@@ -202,37 +202,6 @@
 
     <section class="section">
         <h2>Registros Involucrados</h2>
-        <div class="filters">
-            <label>Fecha desde
-                <input id="date-from" type="date">
-            </label>
-            <label>Fecha hasta
-                <input id="date-to" type="date">
-            </label>
-            <button id="clear-date-filters" type="button">Limpiar fechas</button>
-        </div>
-        <p>El rango de fechas filtra estos registros y actualiza también el total por cuenta contable y el resumen por flujo.</p>
-        <div class="filters">
-            <label>Cuenta contable
-                <select id="account-filter"><option value="">Todas</option></select>
-            </label>
-            <label>Estado
-                <select id="status-filter"><option value="">Todos</option><option value="Con cuenta contable">Con cuenta contable</option><option value="Sin cuenta contable">Sin cuenta contable</option></select>
-            </label>
-            <label>Flujo
-                <select id="flow-filter"><option value="">Todos</option><option value="CAJA: Egresos">CAJA: Egresos</option>
-<option value="CAJA: Egresos Juan">CAJA: Egresos Juan</option>
-<option value="CAJA: Egresos Juan sin Cta. Cte.">CAJA: Egresos Juan sin Cta. Cte.</option>
-<option value="CAJA: Egresos sin cta cte">CAJA: Egresos sin cta cte</option>
-<option value="Comprobantes Proveedores">Comprobantes Proveedores</option></select>
-            </label>
-            <label>clientname
-                <input id="client-filter" type="search" placeholder="Nombre del perfil">
-            </label>
-            <label>Referencia
-                <input id="reference-filter" type="search" placeholder="Texto de referencia">
-            </label>
-        </div>
         <p id="detail-summary" class="filter-summary"></p>
         <div id="asignacion-masiva">
             <div class="step-cards">
@@ -240,12 +209,36 @@
                     <div class="step-card-header">
                         <div class="step-number">1</div>
                         <div>
-                            <h4>Seleccionar registros</h4>
-                            <p class="step-desc">Filtre los registros sin cuenta contable y seleccione los que desea asignar</p>
+                            <h4>Filtrar y seleccionar registros</h4>
+                            <p class="step-desc">Use los filtros para localizar registros pendientes, elegir la cuenta y armar lotes</p>
                         </div>
                     </div>
                     <div class="step-card-body">
                         <div class="step-row">
+                            <label>Fecha desde
+                                <input id="date-from" type="date">
+                            </label>
+                            <label>Fecha hasta
+                                <input id="date-to" type="date">
+                            </label>
+                            <label>Estado
+                                <select id="status-filter"><option value="">Todos</option><option value="Sin cuenta contable">Sin cuenta contable</option><option value="Con cuenta contable">Con cuenta contable</option></select>
+                            </label>
+                            <label>Flujo
+                                <select id="flow-filter"><option value="">Todos</option><option value="CAJA: Egresos">CAJA: Egresos</option>
+<option value="CAJA: Egresos Juan">CAJA: Egresos Juan</option>
+<option value="CAJA: Egresos Juan sin Cta. Cte.">CAJA: Egresos Juan sin Cta. Cte.</option>
+<option value="CAJA: Egresos sin cta cte">CAJA: Egresos sin cta cte</option>
+<option value="Comprobantes Proveedores">Comprobantes Proveedores</option></select>
+                            </label>
+                            <label>clientname
+                                <input id="client-filter" type="search" placeholder="Nombre del perfil">
+                            </label>
+                            <label>Referencia
+                                <input id="reference-filter" type="search" placeholder="Texto de referencia">
+                            </label>
+                        </div>
+                        <div class="step-row" style="margin-top:14px">
                             <label>Cuenta contable a asignar
                                 <select id="assign-account-select">
                                     <option value="">-- Elegir cuenta para este lote --</option>
@@ -253,6 +246,8 @@
                             </label>
                         </div>
                         <div class="step-actions">
+                            <button id="clear-date-filters" type="button" class="btn btn-outline btn-sm">Limpiar filtros</button>
+                            <span style="flex:1"></span>
                             <button id="assign-select-all" type="button" class="btn btn-primary">Seleccionar todos los visibles</button>
                             <button id="assign-clear-selection" type="button" class="btn btn-outline">Quitar selección</button>
                             <button id="assign-btn" type="button" class="btn btn-success">Agregar lote seleccionado</button>
@@ -267,7 +262,7 @@
                         <div class="step-number">2</div>
                         <div>
                             <h4>Lotes preparados</h4>
-                            <p class="step-desc">Revise los lotes antes de enviar. Puede deshacer individualmente o todos.</p>
+                            <p class="step-desc">Revise los lotes, deshaga si es necesario y descargue el SQL</p>
                         </div>
                     </div>
                     <div class="step-card-body">
@@ -276,40 +271,14 @@
                             <button id="assign-undo" type="button" class="btn btn-outline btn-sm">Deshacer último lote</button>
                             <button id="clear-assign-btn" type="button" class="btn btn-danger btn-sm">Deshacer todos</button>
                             <span style="flex:1"></span>
-                            <button id="assign-copy" type="button" class="btn btn-outline green btn-sm">Copiar SQL</button>
-                            <button id="assign-download" type="button" class="btn btn-outline green btn-sm">Descargar SQL</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-card-header">
-                        <div class="step-number">3</div>
-                        <div>
-                            <h4>Verificar y guardar en Flows</h4>
-                            <p class="step-desc">GitHub Actions abre la conexión SSH y actualiza la base. No modifica nada hasta que guarde.</p>
-                        </div>
-                    </div>
-                    <div class="step-card-body">
-                        <div class="step-row">
-                            <label>Repositorio ejecutor
-                                <input id="flows-repository" type="text" value="MaxiPedano/conciliacion-ctas-ctes">
-                            </label>
-                            <label>Token de GitHub
-                                <input id="flows-github-token" type="password" autocomplete="off" placeholder="Fine-grained PAT: Actions R/W, Checks R">
-                            </label>
-                        </div>
-                        <div class="step-actions">
-                            <button id="flows-verify" type="button" class="btn btn-primary">Verificar en Flows</button>
-                            <button id="flows-save" type="button" class="btn btn-success" disabled>Guardar en Flows</button>
-                            <button id="flows-resume" type="button" class="btn btn-outline" disabled>Consultar ejecución</button>
-                            <a id="flows-run-link" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" hidden>Ver ejecución en GitHub</a>
+                            <button id="assign-copy" type="button" class="btn btn-primary btn-sm">Copiar SQL</button>
+                            <button id="assign-download" type="button" class="btn btn-success btn-sm">Descargar SQL</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <details>
-                <summary>SQL acumulado para ejecutar manualmente</summary>
+            <details open>
+                <summary>SQL acumulado</summary>
                 <pre id="sql-output" class="query-box">-- Todavía no hay lotes preparados. Seleccione registros y agregue el primer lote.</pre>
             </details>
         </div>
@@ -5796,7 +5765,6 @@ ORDER BY rc.flowid, estado_cuenta;</pre></details>
     const rows = Array.from(document.querySelectorAll('#detail-table .detail-row'));
     const dateFrom = document.getElementById('date-from');
     const dateTo = document.getElementById('date-to');
-    const accountFilter = document.getElementById('account-filter');
     const statusFilter = document.getElementById('status-filter');
     const flowFilter = document.getElementById('flow-filter');
     const clientFilter = document.getElementById('client-filter');
@@ -5917,7 +5885,6 @@ ORDER BY rc.flowid, estado_cuenta;</pre></details>
     }
 
     function applyDetailFilters() {
-        const account = accountFilter.value;
         const status = statusFilter.value.toLowerCase();
         const flow = flowFilter.value.toLowerCase();
         const client = clientFilter.value.trim().toLowerCase();
@@ -5926,7 +5893,6 @@ ORDER BY rc.flowid, estado_cuenta;</pre></details>
         let amount = 0;
         rows.forEach(function (row) {
             const matches = inDateRange(row.dataset.date)
-                && (!account || row.dataset.accountid === account)
                 && (!status || row.dataset.status.toLowerCase() === status)
                 && (!flow || row.dataset.flow.toLowerCase() === flow)
                 && (!client || row.dataset.clientname.toLowerCase().includes(client))
@@ -5938,27 +5904,18 @@ ORDER BY rc.flowid, estado_cuenta;</pre></details>
         detailSummary.textContent = count(visible) + ' registros visibles | Total filtrado: ' + money(amount);
     }
 
-    const accountOptions = new Map();
-    rows.forEach(function (row) {
-        if (row.dataset.accountid && !accountOptions.has(row.dataset.accountid)) accountOptions.set(row.dataset.accountid, row.dataset.account);
-    });
-    Array.from(accountOptions.entries()).sort(function (left, right) { return left[1].localeCompare(right[1]); }).forEach(function (entry) {
-        const option = document.createElement('option');
-        option.value = entry[0];
-        option.textContent = entry[0] + ' - ' + entry[1];
-        accountFilter.appendChild(option);
-    });
-
     [dateFrom, dateTo].forEach(function (input) {
         input.addEventListener('input', function () { renderAccountSummary(); renderFlowSummary(); applyDetailFilters(); });
         input.addEventListener('change', function () { renderAccountSummary(); renderFlowSummary(); applyDetailFilters(); });
     });
-    [accountFilter, statusFilter, flowFilter, clientFilter, referenceFilter].forEach(function (input) {
+    [statusFilter, flowFilter, clientFilter, referenceFilter].forEach(function (input) {
         input.addEventListener('input', applyDetailFilters);
         input.addEventListener('change', applyDetailFilters);
     });
     document.getElementById('clear-date-filters').addEventListener('click', function () {
         dateFrom.value = ''; dateTo.value = '';
+        statusFilter.value = ''; flowFilter.value = '';
+        clientFilter.value = ''; referenceFilter.value = '';
         renderAccountSummary(); renderFlowSummary(); applyDetailFilters();
     });
 
@@ -5968,7 +5925,6 @@ ORDER BY rc.flowid, estado_cuenta;</pre></details>
     window.refreshAccountReport();
 }());
 </script>
-<script src="assets/flows_actions.js"></script>
 <script src="assets/asignacion_cuentas.js"></script>
 <script src="assets/export_excel.js"></script>
 </body>

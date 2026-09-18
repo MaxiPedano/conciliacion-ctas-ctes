@@ -17,7 +17,6 @@
     var feedback = document.getElementById('assign-feedback');
     var batchList = document.getElementById('batch-list');
     var sql = document.getElementById('sql-output');
-    var filter = document.getElementById('account-filter');
     if (!addBatch || !summary || !feedback || !batchList || !sql) return;
 
     function canonicalAccountId(value) {
@@ -51,14 +50,6 @@
         if (id && !catalog.has(id) && row.dataset.account) catalog.set(id, row.dataset.account);
     });
 
-    if (filter) {
-        filter.replaceChildren(new Option('Todas', ''));
-        Array.from(catalog.entries())
-            .sort(function (a, b) { return a[1].localeCompare(b[1]); })
-            .forEach(function (entry) {
-                filter.add(new Option(entry[0] + ' - ' + entry[1], entry[0]));
-            });
-    }
     select.replaceChildren(new Option('-- Elegir cuenta para este lote --', ''));
     Array.from(catalog.entries())
         .sort(function (a, b) { return a[1].localeCompare(b[1]); })
@@ -77,103 +68,14 @@
     var batches = [];
     var pending = new Set();
     var checked = new Set();
-    var verifiedToken = '';
-    var busy = false;
-    var activeJob = null;
-    var actionsClient = null;
-    var repositoryInput = document.getElementById('flows-repository');
-    var githubToken = document.getElementById('flows-github-token');
-    var verifyButton = document.getElementById('flows-verify');
-    var saveButton = document.getElementById('flows-save');
-    var resumeButton = document.getElementById('flows-resume');
-    var runLink = document.getElementById('flows-run-link');
-    var verificationSummary = document.createElement('p');
-    verificationSummary.setAttribute('role', 'status');
-    verificationSummary.className = 'assignment-feedback';
-    var step3Body = verifyButton && verifyButton.closest('.step-card-body');
-    if (step3Body) step3Body.appendChild(verificationSummary);
-    try { repositoryInput.value = localStorage.getItem('flows-repository') || repositoryInput.value; } catch (error) { /* Almacenamiento opcional. */ }
-    function invalidateVerification() {
-        verifiedToken = '';
-        verificationSummary.textContent = '';
-        refreshSelection();
-    }
-    repositoryInput.addEventListener('input', invalidateVerification);
-    githubToken.addEventListener('input', invalidateVerification);
 
     function setFeedback(message, isError) {
         feedback.textContent = message;
         feedback.className = 'assignment-feedback' + (isError ? ' error' : '');
     }
 
-    async function runOperation(operation, resume) {
-        if (busy) return;
-        busy = true;
-        refreshSelection();
-        setFeedback('Esperando GitHub Actions. La conexión SSH se abre durante la ejecución…');
-        try {
-            if (!resume) {
-                if (!window.FlowsActions) throw new Error('No se cargó assets/flows_actions.js. Recargue el reporte.');
-                actionsClient = window.FlowsActions.createClient(repositoryInput.value.trim(), githubToken.value.trim());
-                try { localStorage.setItem('flows-repository', repositoryInput.value.trim()); } catch (error) { /* Opcional. */ }
-                var payload = operation === 'verify' ? { batches: batches.map(function (batch) {
-                    return { account_id: batch.id, record_ids: batch.rows.map(function (row) { return canonicalRecordId(row.cells[0].textContent); }) };
-                }) } : { verification_token: verifiedToken };
-                activeJob = await actionsClient.prepare(operation, payload);
-                runLink.hidden = false;
-                runLink.href = 'https://github.com/' + repositoryInput.value.trim() + '/actions/workflows/flows-cuentas.yml';
-                await actionsClient.dispatch(activeJob);
-            }
-            var data = await actionsClient.wait(activeJob, function (run) {
-                setFeedback(run ? 'GitHub Actions: ' + run.status + '. Esperando el resultado de Flows…' : 'Esperando que GitHub asigne un ejecutor…');
-                if (run) runLink.href = 'https://github.com/' + repositoryInput.value.trim() + '/actions/runs/' + run.id;
-            });
-            if (operation === 'verify') {
-                if (!data.verification_token || !Array.isArray(data.batches)) throw new Error('Respuesta de verificación inválida.');
-                verifiedToken = data.verification_token;
-                verificationSummary.textContent = 'Verificado por SSH en Flows: ' + data.count + ' registros. ' + data.batches.map(function (batch) {
-                    return batch.record_ids.length + ' → ' + batch.account_id + ' - ' + batch.account_name;
-                }).join(' · ') + '. Verificación válida por 30 minutos.';
-                setFeedback('Revise las cuentas verificadas y pulse Guardar en Flows.');
-            } else {
-                if (data.saved !== true) throw new Error('Actions no confirmó el guardado.');
-                batches.forEach(function (batch) {
-                    batch.rows.forEach(function (row) {
-                        pending.delete(row);
-                        row.cells[7].innerHTML = '<span class="badge badge-assigned">Guardado en Flows</span>';
-                        originals.set(row, {
-                            accountid: row.dataset.accountid, account: row.dataset.account, status: row.dataset.status,
-                            cells: [5, 6, 7].map(function (index) { return row.cells[index].innerHTML; })
-                        });
-                    });
-                });
-                batches = [];
-                verifiedToken = '';
-                verificationSummary.textContent = data.count + ' registros confirmados en la base de Flows. Los resúmenes publicados son una instantánea; regenere el reporte para actualizarlos.';
-                setFeedback('Guardado confirmado en Flows mediante SSH.');
-                renderBatches();
-            }
-            activeJob = null;
-        } catch (error) {
-            if (error.definitive) activeJob = null;
-            setFeedback(error.message + (activeJob ? ' Los lotes se conservan. Pulse Consultar ejecución para recuperar el resultado.' : ' Los lotes se conservan.'), true);
-        } finally { busy = false; refreshSelection(); }
-    }
-
-    verifyButton.addEventListener('click', function () {
-        if (busy || activeJob || !batches.length) return;
-        invalidateVerification();
-        runOperation('verify', false);
-    });
-    saveButton.addEventListener('click', function () {
-        if (busy || activeJob || !verifiedToken) return;
-        runOperation('save', false);
-    });
-    resumeButton.addEventListener('click', function () {
-        if (activeJob) runOperation(activeJob.operation, true);
-    });
     window.addEventListener('beforeunload', function (event) {
-        if (batches.length || busy || activeJob) { event.preventDefault(); event.returnValue = ''; }
+        if (batches.length) { event.preventDefault(); event.returnValue = ''; }
     });
 
     var heading = document.createElement('th');
@@ -211,7 +113,6 @@
     }
 
     function refreshSelection() {
-        var locked = busy || Boolean(activeJob);
         var available = 0;
         boxes.forEach(function (box, row) {
             var eligible = !row.hidden && !row.dataset.accountid;
@@ -224,17 +125,12 @@
         summary.textContent = available.toLocaleString('es-AR') + ' pendientes visibles · ' +
             selected.toLocaleString('es-AR') + ' seleccionados para el lote actual · ' +
             batches.length.toLocaleString('es-AR') + ' lotes preparados';
-        addBatch.disabled = locked || !selected || !select.value;
-        verifyButton.disabled = locked || !batches.length;
-        saveButton.disabled = locked || !verifiedToken;
-        resumeButton.disabled = busy || !activeJob;
-        repositoryInput.disabled = locked;
-        githubToken.disabled = locked;
-        select.disabled = locked;
+        addBatch.disabled = !selected || !select.value;
+        select.disabled = false;
         if (selectAll) selectAll.disabled = !available;
         if (clearSelection) clearSelection.disabled = !selected;
-        if (undoBatch) undoBatch.disabled = locked || !batches.length;
-        if (clearBatches) clearBatches.disabled = locked || !batches.length;
+        if (undoBatch) undoBatch.disabled = !batches.length;
+        if (clearBatches) clearBatches.disabled = !batches.length;
         if (copySql) copySql.disabled = !batches.length;
         if (downloadSql) downloadSql.disabled = !batches.length;
     }
@@ -294,8 +190,6 @@
     });
 
     addBatch.addEventListener('click', function () {
-        if (busy || activeJob) return;
-        invalidateVerification();
         refreshSelection();
         var id = canonicalAccountId(select.value);
         var selected = Array.from(checked);
@@ -323,8 +217,7 @@
             row.cells[7].innerHTML = '<span class="badge badge-pending">Asignación pendiente · lote ' + batches.length + '</span>';
         });
         checked.clear();
-        setFeedback('Lote ' + batches.length + ' agregado con ' + selected.length.toLocaleString('es-AR') +
-            ' registros. Puede agregar más lotes o pasar al paso 2.');
+        setFeedback('Lote ' + batches.length + ' agregado con ' + selected.length.toLocaleString('es-AR') + ' registros.');
         renderBatches();
     });
 
@@ -342,19 +235,15 @@
     }
 
     if (undoBatch) undoBatch.addEventListener('click', function () {
-        if (busy || activeJob) return;
-        invalidateVerification();
         var batch = batches.pop();
         if (!batch) return;
         restore(batch);
-        setFeedback('Se deshizo el último lote. Los demás lotes siguen preparados.');
+        setFeedback('Se deshizo el último lote.');
         renderBatches();
     });
     if (clearBatches) clearBatches.addEventListener('click', function () {
-        if (busy || activeJob) return;
         if (!batches.length) return;
         if (!window.confirm('¿Deshacer todos los lotes preparados en esta sesión?')) return;
-        invalidateVerification();
         batches.splice(0).forEach(restore);
         setFeedback('Se deshicieron todos los lotes.');
         renderBatches();
@@ -379,16 +268,16 @@
         var text = sql.textContent;
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(function () {
-                setFeedback('SQL acumulado copiado. Incluye los ' + batches.length + ' lotes preparados.');
+                setFeedback('SQL copiado al portapapeles.');
             }, function () {
                 setFeedback(fallbackCopy(text)
-                    ? 'SQL acumulado copiado. Incluye los ' + batches.length + ' lotes preparados.'
-                    : 'No se pudo copiar automáticamente; copiá el texto del recuadro SQL.');
+                    ? 'SQL copiado al portapapeles.'
+                    : 'No se pudo copiar; copiá el texto del recuadro SQL.');
             });
         } else {
             setFeedback(fallbackCopy(text)
-                ? 'SQL acumulado copiado. Incluye los ' + batches.length + ' lotes preparados.'
-                : 'No se pudo copiar automáticamente; copiá el texto del recuadro SQL.');
+                ? 'SQL copiado al portapapeles.'
+                : 'No se pudo copiar; copiá el texto del recuadro SQL.');
         }
     });
     if (downloadSql) downloadSql.addEventListener('click', function () {
@@ -401,7 +290,7 @@
         link.click();
         link.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-        setFeedback('Archivo SQL descargado con los ' + batches.length + ' lotes preparados.');
+        setFeedback('Archivo SQL descargado.');
     });
 
     var observer = new MutationObserver(refreshSelection);
