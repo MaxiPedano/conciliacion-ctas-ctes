@@ -11,6 +11,9 @@
     }
 
     function removeRowsFromClone(clone, includeAll) {
+        clone.querySelectorAll("[data-excel-ignore]").forEach(function (element) {
+            element.remove();
+        });
         clone.querySelectorAll("tbody tr").forEach(function (row) {
             if (row.classList.contains("empty-row") || row.id === "no-results") {
                 row.remove();

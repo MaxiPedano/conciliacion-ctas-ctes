@@ -30,11 +30,19 @@
         .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; color: white; font-size: .8rem; font-weight: 600; white-space: nowrap; }
         .badge-assigned { background: #218653; }
         .badge-unassigned { background: #a94442; }
+        .badge-pending { background: #c87923; }
         .table-wrap { max-height: 660px; overflow: auto; border: 1px solid #dce4e8; border-radius: 7px; }
         .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; padding: 14px; margin: 15px 0; background: #eef5f7; border: 1px solid #d5e5e9; border-radius: 8px; }
         .filters label { display: flex; flex-direction: column; gap: 4px; color: #36515e; font-size: .82rem; font-weight: 600; }
         .filters input, .filters select, .filters button { min-height: 36px; padding: 7px 9px; border: 1px solid #b9cbd1; border-radius: 5px; background: white; font: inherit; }
         .filters button { align-self: end; cursor: pointer; color: white; background: #24536b; border-color: #24536b; font-weight: 600; }
+        .filters button:disabled { opacity: .55; cursor: not-allowed; }
+        .filters button.positive { background: #218653; border-color: #218653; }
+        .filters button.negative { background: #a94442; border-color: #a94442; }
+        .assignment-steps { margin: 12px 0; padding-left: 22px; }
+        .assignment-steps li { margin-bottom: 6px; }
+        .batch-list { margin: 10px 0; padding-left: 22px; }
+        .assignment-feedback { color: #1b5e20; font-weight: 600; min-height: 1.2em; }
         .filter-summary { margin: 10px 0; color: #36515e; font-weight: 600; }
         .empty-row { display: none; }
         details { margin: 10px 0; border: 1px solid #dce4e8; border-radius: 6px; }
@@ -194,6 +202,39 @@
             </label>
         </div>
         <p id="detail-summary" class="filter-summary"></p>
+        <div id="asignacion-masiva">
+            <h3>Asignación masiva por lotes</h3>
+            <p>El trabajo es por lotes: cada lote agrupa muchos registros con la misma cuenta contable. El informe conserva un <code>UPDATE</code> separado por lote y los combina en una única transacción SQL.</p>
+            <ol class="assignment-steps">
+                <li><strong>Paso 1: filtrar pendientes.</strong> Use Estado = <strong>Sin cuenta contable</strong> y, si necesita, fecha, flujo, perfil o referencia.</li>
+                <li><strong>Paso 2: seleccionar el lote.</strong> Marque las casillas de la columna <strong>Lote</strong> o use <strong>Seleccionar todos los pendientes visibles</strong>.</li>
+                <li><strong>Paso 3: elegir cuenta y agregar el lote.</strong> Seleccione la cuenta y pulse <strong>Agregar lote seleccionado</strong>.</li>
+                <li><strong>Paso 4: repetir.</strong> Cambie los filtros, seleccione otro grupo y agréguelo con otra cuenta. Los lotes anteriores se conservan.</li>
+                <li><strong>Paso 5: verificar y guardar en Flows.</strong> Ingrese el repositorio ejecutor y su token de GitHub. Pulse <strong>Verificar en Flows</strong>, revise el resultado y pulse <strong>Guardar en Flows</strong>. GitHub Actions abre la conexión SSH y actualiza la base. Preparar lotes no modifica Flows.</li>
+            </ol>
+            <div class="filters">
+                <label>Cuenta para el lote actual
+                    <select id="assign-account-select">
+                        <option value="">-- Elegir cuenta para este lote --</option>
+                    </select>
+                </label>
+                <button id="assign-select-all" type="button">Seleccionar todos los pendientes visibles</button>
+                <button id="assign-clear-selection" type="button">Quitar selección</button>
+                <button id="assign-btn" class="positive" type="button">Agregar lote seleccionado</button>
+                <button id="assign-undo" type="button">Deshacer último lote</button>
+                <button id="clear-assign-btn" class="negative" type="button">Deshacer todos los lotes</button>
+                <button id="assign-copy" class="positive" type="button">Copiar SQL acumulado</button>
+                <button id="assign-download" class="positive" type="button">Descargar SQL de todos los lotes</button>
+            </div>
+            <p id="assign-summary" class="filter-summary"></p>
+            <p id="assign-feedback" class="assignment-feedback" role="status"></p>
+            <h4>Lotes preparados</h4>
+            <ol id="batch-list" class="batch-list"><li>Sin lotes preparados.</li></ol>
+            <details open>
+                <summary>SQL acumulado para ejecutar en la base de datos</summary>
+                <pre id="sql-output" class="query-box">-- Todavía no hay lotes preparados. Seleccione registros pendientes y agregue el primer lote.</pre>
+            </details>
+        </div>
         <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros Involucrados">
             <thead><tr><th>registrocab</th><th>fecha</th><th>clientname</th><th>referencia</th><th>flujo</th><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>totalprecio</th><th>impuestos</th></tr></thead>
             <tbody><tr class="detail-row" data-date="0202-12-24" data-accountid="11396.0" data-account="5.2.1/03/07 - Gastos Varios comercialización - CONDISEÑO" data-status="Con cuenta contable" data-flow="Comprobantes Proveedores" data-clientname="Zofracor Sa" data-reference="FCA004-00023638 24/12/2025" data-amount="419873.6300"><td>16283</td><td>24/12/0202</td><td>Zofracor Sa</td><td>FCA004-00023638 24/12/2025</td><td>Comprobantes Proveedores</td><td>11396</td><td>5.2.1/03/07 - Gastos Varios comercialización - CONDISEÑO</td><td><span class="badge badge-assigned">Con cuenta contable</span></td><td class="currency">$419,873.63</td><td class="currency">$419,873.63</td></tr>
@@ -5843,11 +5884,14 @@ ORDER BY rc.flowid, estado_cuenta;</pre></details>
         renderAccountSummary(); renderFlowSummary(); applyDetailFilters();
     });
 
-    renderAccountSummary();
-    renderFlowSummary();
-    applyDetailFilters();
+    window.refreshAccountReport = function () {
+        renderAccountSummary(); renderFlowSummary(); applyDetailFilters();
+    };
+    window.refreshAccountReport();
 }());
 </script>
+<script src="assets/flows_actions.js"></script>
+<script src="assets/asignacion_cuentas.js"></script>
 <script src="assets/export_excel.js"></script>
 </body>
 </html>

@@ -39,6 +39,14 @@ $env:AVANZIA_DB_PASSWORD = "<password-local>"
 
 El informe maestro para navegar los reportes es `index.html`.
 
+### Asignación de cuentas desde GitHub Pages
+
+El reporte de cuentas contables permite preparar lotes, **verificar en Flows**
+y **guardar en la base de datos** con **GitHub Actions + SSH**, sin servidor
+adicional. Las credenciales se configuran en GitHub Secrets; los botones usan
+un token de GitHub ingresado en el navegador.
+Ver [configuración y publicación](docs/guardar_cuentas_flows.md).
+
 Todos los listados HTML incluyen botones para descargar en Excel los registros
 visibles según los filtros o la totalidad del listado (`.xls`, compatible con
 Excel).
@@ -127,7 +135,7 @@ puede afectar el resultado final.
 ## Limitaciones Tecnicas
 
 - El matching es greedy y depende del orden de las filas.
-- No hay pruebas automatizadas.
+- Hay pruebas automatizadas para la asignación por GitHub Actions; la conciliación histórica aún no tiene cobertura automatizada.
 - La logica de clasificacion esta hardcodeada en los scripts.
 - Los HTML contienen datos financieros embebidos; no deben publicarse
   sin revisar confidencialidad.

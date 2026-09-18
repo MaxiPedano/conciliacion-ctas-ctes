@@ -9,6 +9,12 @@
 consolidado_proveedores/
 
 # Python
+.env
+.env.*
+!.env.example
+*.pem
+*.ppk
+*_openssh
 __pycache__/
 *.py[cod]
 .venv/

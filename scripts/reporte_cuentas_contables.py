@@ -11,6 +11,7 @@ import psycopg2
 
 DB_CONFIG = {
     "host": os.getenv("AVANZIA_DB_HOST", "localhost"),
+    "port": os.getenv("AVANZIA_DB_PORT", "5432"),
     "database": os.getenv("AVANZIA_DB_NAME", "va9000-avanzia"),
     "user": os.getenv("AVANZIA_DB_USER", "postgres"),
     "password": os.getenv("AVANZIA_DB_PASSWORD") or os.getenv("PGPASSWORD"),
@@ -75,6 +76,20 @@ GROUP BY rc.flowid, flow.name, estado_cuenta
 ORDER BY rc.flowid, estado_cuenta;
 """
 
+QUERY_ALL_ACCOUNTS = """
+SELECT
+    c.id,
+    c.name,
+    pa.name AS parent_name,
+    ab.name AS abuelo_name
+FROM test9000.categorias c
+LEFT JOIN test9000.categorias pa ON c.parentid = pa.id
+LEFT JOIN test9000.categorias ab ON pa.parentid = ab.id
+WHERE c.grupo = 'cuentacontable'
+  AND pa.parentid IS NOT NULL
+ORDER BY c.id;
+"""
+
 
 def read_query(connection, query):
     with connection.cursor() as cursor:
@@ -125,6 +140,18 @@ def identifier(value):
     if empty(value):
         return "-"
     return str(int(float(value)))
+
+
+def account_key(value):
+    if empty(value):
+        return ""
+    text = str(value).strip()
+    if not text:
+        return ""
+    try:
+        return str(int(float(text)))
+    except (TypeError, ValueError):
+        return text
 
 
 def iso_date(value):
@@ -188,7 +215,7 @@ def build_flow_rows(df):
 def build_detail_rows(df):
     rows = []
     for _, row in df.iterrows():
-        account_id = "" if empty(row["cuentacontableid"]) else str(row["cuentacontableid"])
+        account_id = account_key(row["cuentacontableid"])
         account_name = "SIN CUENTA CONTABLE" if empty(row["cuenta_contable"]) else str(row["cuenta_contable"])
         status = "Sin cuenta contable" if not account_id else "Con cuenta contable"
         date_value = iso_date(row["fecha"])
@@ -226,6 +253,20 @@ def option_rows(values):
     )
 
 
+def build_account_options(df):
+    rows = []
+    for _, row in df.iterrows():
+        label = f"{int(row['id'])} - {row['name']}"
+        if not empty(row.get('parent_name')):
+            label += f" ({row['parent_name']})"
+        rows.append(
+            f"<option value=\"{int(row['id'])}\">"
+            f"{html.escape(label)}"
+            f"</option>"
+        )
+    return "\n".join(rows)
+
+
 def query_block(title, query):
     return (
         f"<details><summary>{html.escape(title)}</summary>"
@@ -240,11 +281,13 @@ def generate_report():
         df_detail = read_query(connection, QUERY_DETAIL)
         df_accounts = read_query(connection, QUERY_ACCOUNT_SUMMARY)
         df_flows = read_query(connection, QUERY_FLOW_SUMMARY)
+        df_all_accounts = read_query(connection, QUERY_ALL_ACCOUNTS)
 
     detail_html = build_detail_rows(df_detail)
     account_html = build_account_rows(df_accounts)
     flow_html = build_flow_rows(df_flows)
     flow_options = option_rows(df_detail["flow_name"].dropna().unique())
+    all_account_options = build_account_options(df_all_accounts)
 
     total_records = len(df_detail)
     assigned = int(df_detail["cuentacontableid"].notna().sum())
@@ -286,11 +329,19 @@ def generate_report():
         .badge {{ display: inline-block; padding: 3px 9px; border-radius: 999px; color: white; font-size: .8rem; font-weight: 600; white-space: nowrap; }}
         .badge-assigned {{ background: #218653; }}
         .badge-unassigned {{ background: #a94442; }}
+        .badge-pending {{ background: #c87923; }}
         .table-wrap {{ max-height: 660px; overflow: auto; border: 1px solid #dce4e8; border-radius: 7px; }}
         .filters {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; padding: 14px; margin: 15px 0; background: #eef5f7; border: 1px solid #d5e5e9; border-radius: 8px; }}
         .filters label {{ display: flex; flex-direction: column; gap: 4px; color: #36515e; font-size: .82rem; font-weight: 600; }}
         .filters input, .filters select, .filters button {{ min-height: 36px; padding: 7px 9px; border: 1px solid #b9cbd1; border-radius: 5px; background: white; font: inherit; }}
         .filters button {{ align-self: end; cursor: pointer; color: white; background: #24536b; border-color: #24536b; font-weight: 600; }}
+        .filters button:disabled {{ opacity: .55; cursor: not-allowed; }}
+        .filters button.positive {{ background: #218653; border-color: #218653; }}
+        .filters button.negative {{ background: #a94442; border-color: #a94442; }}
+        .assignment-steps {{ margin: 12px 0; padding-left: 22px; }}
+        .assignment-steps li {{ margin-bottom: 6px; }}
+        .batch-list {{ margin: 10px 0; padding-left: 22px; }}
+        .assignment-feedback {{ color: #1b5e20; font-weight: 600; min-height: 1.2em; }}
         .filter-summary {{ margin: 10px 0; color: #36515e; font-weight: 600; }}
         .empty-row {{ display: none; }}
         details {{ margin: 10px 0; border: 1px solid #dce4e8; border-radius: 6px; }}
@@ -362,6 +413,40 @@ def generate_report():
             </label>
         </div>
         <p id="detail-summary" class="filter-summary"></p>
+        <div id="asignacion-masiva">
+            <h3>Asignación masiva por lotes</h3>
+            <p>El trabajo es por lotes: cada lote agrupa muchos registros con la misma cuenta contable. El informe conserva un <code>UPDATE</code> separado por lote y los combina en una única transacción SQL.</p>
+            <ol class="assignment-steps">
+                <li><strong>Paso 1: filtrar pendientes.</strong> Use Estado = <strong>Sin cuenta contable</strong> y, si necesita, fecha, flujo, perfil o referencia.</li>
+                <li><strong>Paso 2: seleccionar el lote.</strong> Marque las casillas de la columna <strong>Lote</strong> o use <strong>Seleccionar todos los pendientes visibles</strong>.</li>
+                <li><strong>Paso 3: elegir cuenta y agregar el lote.</strong> Seleccione la cuenta y pulse <strong>Agregar lote seleccionado</strong>.</li>
+                <li><strong>Paso 4: repetir.</strong> Cambie los filtros, seleccione otro grupo y agréguelo con otra cuenta. Los lotes anteriores se conservan.</li>
+                <li><strong>Paso 5: verificar y guardar en Flows.</strong> Ingrese el repositorio ejecutor y su token de GitHub. Pulse <strong>Verificar en Flows</strong>, revise el resultado y pulse <strong>Guardar en Flows</strong>. GitHub Actions abre la conexión SSH y actualiza la base. Preparar lotes no modifica Flows.</li>
+            </ol>
+            <div class="filters">
+                <label>Cuenta para el lote actual
+                    <select id="assign-account-select">
+                        <option value="">-- Elegir cuenta para este lote --</option>
+                        {all_account_options}
+                    </select>
+                </label>
+                <button id="assign-select-all" type="button">Seleccionar todos los pendientes visibles</button>
+                <button id="assign-clear-selection" type="button">Quitar selección</button>
+                <button id="assign-btn" class="positive" type="button">Agregar lote seleccionado</button>
+                <button id="assign-undo" type="button">Deshacer último lote</button>
+                <button id="clear-assign-btn" class="negative" type="button">Deshacer todos los lotes</button>
+                <button id="assign-copy" class="positive" type="button">Copiar SQL acumulado</button>
+                <button id="assign-download" class="positive" type="button">Descargar SQL de todos los lotes</button>
+            </div>
+            <p id="assign-summary" class="filter-summary"></p>
+            <p id="assign-feedback" class="assignment-feedback" role="status"></p>
+            <h4>Lotes preparados</h4>
+            <ol id="batch-list" class="batch-list"><li>Sin lotes preparados.</li></ol>
+            <details open>
+                <summary>SQL acumulado para ejecutar en la base de datos</summary>
+                <pre id="sql-output" class="query-box">-- Todavía no hay lotes preparados. Seleccione registros pendientes y agregue el primer lote.</pre>
+            </details>
+        </div>
         <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros Involucrados">
             <thead><tr><th>registrocab</th><th>fecha</th><th>clientname</th><th>referencia</th><th>flujo</th><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>totalprecio</th><th>impuestos</th></tr></thead>
             <tbody>{detail_html}<tr id="no-results" class="empty-row"><td colspan="10">No hay registros para los filtros seleccionados.</td></tr></tbody>
@@ -559,11 +644,14 @@ def generate_report():
         renderAccountSummary(); renderFlowSummary(); applyDetailFilters();
     }});
 
-    renderAccountSummary();
-    renderFlowSummary();
-    applyDetailFilters();
+    window.refreshAccountReport = function () {{
+        renderAccountSummary(); renderFlowSummary(); applyDetailFilters();
+    }};
+    window.refreshAccountReport();
 }}());
 </script>
+<script src="assets/flows_actions.js"></script>
+<script src="assets/asignacion_cuentas.js"></script>
 <script src="assets/export_excel.js"></script>
 </body>
 </html>
