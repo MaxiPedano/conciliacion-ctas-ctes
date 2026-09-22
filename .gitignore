@@ -4,6 +4,7 @@
 *.sql
 !docs/*.sql
 *.xlsx
+!reporte_ultimas_asignaciones.xlsx
 
 # Salidas antiguas o duplicadas
 consolidado_proveedores/
