@@ -14,7 +14,12 @@ const isIncome = r => r.signo === 1;
 const groups = (rows, key) => {const out=new Map();rows.forEach(r=>{const k=key(r);if(!out.has(k))out.set(k,[]);out.get(k).push(r)});return [...out.entries()].sort(([a],[b])=>a.localeCompare(b,'es'))};
 const table = (head, body) => '<div class="scroll"><table><thead><tr>'+head.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>';
 const num = v => '<td class="num">'+money(v)+'</td>';
-let current = [], included = [], articleRows = [], articleVisible = [], articleLines = new Map();
+let current = [], included = [], articleRows = [], articleVisible = [], articleLines = new Map(),
+    expenseRows = [], expenseVisible = [], expenseLines = new Map(), otherSales = 0, otherSalesRows = [];
+const norm = v => String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+const SERVICE_WORDS = ['FLETE','FREIGHT','SERVICIO','SERVICIOS','DESPACHO','TRASLADO','ENVIO','BORDADO','LOGO','ALQUILER','ANULACION','STAFF','TRANSPORTE','MONOTONO','HANDLING'];
+const isServiceLine = b => norm(b.categoria).includes('SERVICIO') ||
+  SERVICE_WORDS.some(w=>norm(b.articulo).includes(w));
 
 function disclosure(title, rows, detailFactory) {
   const el=document.createElement('details');const s=document.createElement('summary');s.textContent=title;el.append(s);
@@ -52,27 +57,61 @@ function renderCompanies(){
 function buildArticleRows(){
  const modo=$('agrupar').value, showCompany=!$('empresa').value;
  const ids=new Set(included.map(r=>r.id));
- const map=new Map(); articleLines=new Map();
+ const map=new Map(); const others=new Map(); articleLines=new Map(); otherSales=0; otherSalesRows=[];
  DATA.lineas.forEach(b=>{
   if(b.fiscal)return;
   const r=records.get(b.registro_id); if(!r||!ids.has(r.id))return;
+  if(r.concepto!=='Ventas netas facturadas')return;
   const grupo=modo==='mes'?(r.fecha?r.fecha.slice(0,7):'Sin fecha'):(b.categoria||'Sin categoría');
+  if(b.generico||b.servicio||isServiceLine(b)){
+   otherSales+=b.neto||0;
+   const k=[showCompany?r.empresa:'',grupo,b.articulo||'Artículo no identificado'].join(' § ');
+   const o=others.get(k)||{empresa:r.empresa,grupo:grupo,art:b.articulo||'Artículo no identificado',unidades:0,ventas:0};
+   if(!b.generico&&!b.servicio){if(b.cantidad_venta===null)o.revisar=(o.revisar||0)+1;else o.unidades+=b.cantidad_venta||0}
+   o.ventas+=b.neto||0;others.set(k,o);
+   return;
+  }
   const art=b.articulo||'Artículo no identificado';
-  const um=b.generico?'':(b.unidad||'');
+  const um=b.unidad||'';
   const key=[showCompany?r.empresa:'',grupo,art,um,'ID '+b.articulo_id].join(' § ');
   let e=map.get(key);
-  if(!e){e={key:key,empresa:r.empresa,grupo:grupo,art:art,um:um,artId:b.articulo_id,unidades:0,revisar:0,ventas:0,costo:0,otros:0};map.set(key,e)}
+  if(!e){e={key:key,empresa:r.empresa,grupo:grupo,art:art,um:um,artId:b.articulo_id,unidades:0,revisar:0,ventas:0};map.set(key,e)}
   if(!articleLines.has(key))articleLines.set(key,[]);
   articleLines.get(key).push(b);
-  if(r.concepto==='Ventas netas facturadas'){
-   if(!b.generico&&!b.servicio){
-    if(b.cantidad_venta===null)e.revisar++;else e.unidades+=b.cantidad_venta;
-   }
-   e.ventas+=b.neto||0;
-  }else if(r.concepto==='Costo de ventas registrado'){e.costo+=b.neto||0}
-  else if(r.signo===1)e.otros+=b.neto||0;
+  if(b.cantidad_venta===null)e.revisar++;else e.unidades+=b.cantidad_venta;
+  e.ventas+=b.neto||0;
  });
+ otherSalesRows=[...others.values()].sort((a,b)=>b.ventas-a.ventas);
  return [...map.values()].filter(e=>e.ventas!==0);
+}
+function buildExpenseRows(){
+ const modo=$('agrupar').value, showCompany=!$('empresa').value;
+ const map=new Map(); expenseLines=new Map();
+ const put=(r,grupo,art,um,artId,line)=>{const key=[showCompany?r.empresa:'',grupo,art,um,artId==null?'sin id':'ID '+artId].join(' § ');
+  let e=map.get(key);
+  if(!e){e={key:key,empresa:r.empresa,grupo:grupo,art:art,um:um,artId:artId,cantidad:0,renglones:0,importe:0};map.set(key,e)}
+  if(!expenseLines.has(key))expenseLines.set(key,[]);
+  if(line)expenseLines.get(key).push(line);
+  e.renglones++;e.importe+=line?((line.neto||0)):0;
+  if(line)e.cantidad+=line.cantidad||0;
+  return e;};
+ included.forEach(r=>{
+  if(isIncome(r))return;
+  const grupo=modo==='mes'?(r.fecha?r.fecha.slice(0,7):'Sin fecha'):'';
+  const own=(lines.get(r.id)||[]).filter(b=>!b.fiscal);
+  let acc=0;
+  own.forEach(b=>{
+   const cat=grupo||b.categoria||'Sin categoría';
+   const e=put(r,cat,b.articulo||'Artículo no identificado',b.unidad||'',b.articulo_id,b);
+   acc+=b.neto||0;
+  });
+  const resid=(r.importe_resultado||0)-acc;
+  if(resid!==0){
+   const cat=grupo||'Sin artículo (cabecera sin renglón)';
+   put(r,cat,'Sin renglón de artículo','',null,null).importe+=resid;
+  }
+ });
+ return [...map.values()].filter(e=>e.importe!==0);
 }
 const unitsByUm = rows => {
  const byUm=new Map();let review=0;
@@ -90,14 +129,14 @@ function renderArticles(){
  const showCompany=!$('empresa').value;
  const rows=articleRows.filter(e=>!q||(e.empresa+' § '+e.grupo+' § '+e.art+' [ID '+e.artId+']').toLocaleLowerCase('es').includes(q));
  articleVisible=rows;
- if(!rows.length){target.innerHTML='<p class="empty">Sin artículos de venta para la selección.</p>';note.textContent='';return}
+  if(!rows.length){target.innerHTML='<p class="empty">Sin artículos de venta para la selección.</p>';note.textContent='';$('article-other').innerHTML='';return}
  rows.sort((a,b)=>a.empresa.localeCompare(b.empresa,'es')||a.grupo.localeCompare(b.grupo,'es')||b.ventas-a.ventas||a.art.localeCompare(b.art,'es'));
  const total=rs=>rs.reduce((s,e)=>({u:s.u+e.unidades,v:s.v+e.ventas}),{u:0,v:0});
  const compTot=new Map(),grpTot=new Map();
  rows.forEach(e=>{const ck=showCompany?e.empresa:'__all__',gk=ck+' § '+e.grupo;
   [[compTot,ck],[grpTot,gk]].forEach(([m,k])=>{const v=m.get(k)||{rows:[]};v.rows.push(e);m.set(k,v)})});
  const head='<th>'+(modo==='mes'?'Mes / Artículo':'Categoría / Artículo')+'</th><th class="num">Unidades facturadas</th><th class="num">Importe sin IVA</th>';
- let html='<div class="scroll"><table id="sales-table"><thead><tr>'+head+'</tr></thead>';
+  let html='<div class="scroll"><table id="sales-table" class="flat"><thead><tr>'+head+'</tr></thead>';
  let comp=null,grp=null,open=false;
  rows.forEach((e,i)=>{
   const ck=showCompany?e.empresa:'__all__';
@@ -110,14 +149,56 @@ function renderArticles(){
   html+='<tr class="art"><td><span class="art-name" title="'+esc(e.art+' [ID '+e.artId+']'+(e.um?' · '+e.um:''))+'">'+esc(e.art)+' <small>[ID '+e.artId+']'+(e.um?' · '+esc(e.um):'')+'</small></span> <button class="ghost" data-i="'+i+'">Ver renglones</button></td><td class="num">'+(e.unidades||e.revisar?qty(e.unidades)+(e.revisar?' <small class="rev">('+e.revisar+' a revisar)</small>':''):'—')+'</td><td class="num">'+money(e.ventas)+'</td></tr>';
  });
  if(open)html+='</tbody>';
- const t=total(rows), gAll=total(articleRows);
- html+='</tbody><tbody><tr class="total"><td>TOTAL '+(q?'VISIBLE':'VENTAS FACTURADAS')+'</td><td class="num">'+unitsByUm(rows)+'</td><td class="num">'+money(t.v)+'</td></tr></tbody></table></div>';
- target.innerHTML=html;
- const rec=amount(included.filter(r=>r.concepto==='Ventas netas facturadas'));
- note.innerHTML=rows.length+' artículos · renglones de venta '+money(t.v)+' · reconocido en el estado de resultados '+money(rec)+
-  ' · diferencia (IVA separado en renglones / cabeceras sin detalle) '+money(t.v-rec)+
-  (q?' · total sin búsqueda: '+money(gAll.v):'')+'. Cantidades de bienes facturados; servicios y artículos genéricos no cuentan unidades. El sistema no registra unidad de medida, por eso las cantidades se leen como unidades.';
-}
+  const t=total(rows), gAll=total(articleRows);
+  html+='</tbody><tbody><tr class="total"><td>TOTAL '+(q?'VISIBLE':'ARTÍCULOS VENDIDOS')+'</td><td class="num">'+unitsByUm(rows)+'</td><td class="num">'+money(t.v)+'</td></tr></tbody></table></div>';
+  target.innerHTML=html;
+  const rec=amount(included.filter(r=>r.concepto==='Ventas netas facturadas'));
+  note.innerHTML=rows.length+' artículos de venta · importe de la tabla '+money(t.v)+
+   ' · servicios y otros conceptos facturados aparte '+money(otherSales)+
+   ' · total de ventas facturadas '+money(rec)+
+   (q?' · total sin búsqueda '+money(gAll.v):'')+
+   '. Solo productos (sillas, mesas, accesorios): fletes, servicios, despachos y similares quedan en la lista siguiente. Unidades de bienes; el sistema no registra unidad de medida.';
+  const other=$('article-other');
+  if(!otherSalesRows.length){other.innerHTML=''}
+  else other.innerHTML='<details><summary>Servicios y otros conceptos facturados · '+otherSalesRows.length+' · '+money(otherSales)+'</summary>'+
+   table(['Empresa','Categoría / mes','Concepto','Unidades','Importe sin IVA'],otherSalesRows.map(o=>'<tr><td>'+esc(o.empresa)+'</td><td>'+esc(o.grupo)+'</td><td>'+esc(o.art)+'</td><td class="num">'+(o.unidades||o.revisar?qty(o.unidades)+(o.revisar?' ('+o.revisar+' a revisar)':''):'—')+'</td>'+num(o.ventas)).join(''))+'</details>';
+ }
+ function renderExpenses(){
+  const target=$('expense-table'), note=$('expense-note');
+  const q=$('articulo').value.trim().toLocaleLowerCase('es'), modo=$('agrupar').value;
+  const showCompany=!$('empresa').value;
+  const rows=expenseRows.filter(e=>!q||(e.empresa+' § '+e.grupo+' § '+e.art).toLocaleLowerCase('es').includes(q));
+  expenseVisible=rows;
+  if(!rows.length){target.innerHTML='<p class="empty">Sin costos ni gastos con artículo para la selección.</p>';note.textContent='';return}
+  rows.sort((a,b)=>a.empresa.localeCompare(b.empresa,'es')||a.grupo.localeCompare(b.grupo,'es')||b.importe-a.importe||a.art.localeCompare(b.art,'es'));
+  const total=rs=>rs.reduce((s,e)=>s+e.importe,0);
+  const qtyOf=rs=>rs.reduce((s,e)=>s+e.cantidad,0);
+  const compTot=new Map(),grpTot=new Map();
+  rows.forEach(e=>{const ck=showCompany?e.empresa:'__all__',gk=ck+' § '+e.grupo;
+   [[compTot,ck],[grpTot,gk]].forEach(([m,k])=>{const v=m.get(k)||{rows:[]};v.rows.push(e);m.set(k,v)})});
+  const head='<th>'+(modo==='mes'?'Mes / Artículo':'Categoría / Artículo')+'</th><th class="num">Cantidad</th><th class="num">Importe sin IVA</th>';
+  let html='<div class="scroll"><table id="expense-sales-table" class="flat"><thead><tr>'+head+'</tr></thead>';
+  let comp=null,grp=null,open=false;
+  rows.forEach((e,i)=>{
+   const ck=showCompany?e.empresa:'__all__';
+   if(ck!==comp){if(open){html+='</tbody>';open=false}comp=ck;grp=null;
+    if(showCompany){const rs=compTot.get(ck).rows;
+     html+='<tbody class="company"><tr class="empresa"><td>EMPRESA: '+esc(ck)+'</td><td class="num">'+qty(qtyOf(rs))+'</td><td class="num">'+money(total(rs))+'</td></tr></tbody>'}}
+   if(e.grupo!==grp){if(open){html+='</tbody>';open=false}grp=e.grupo;
+    const rs=grpTot.get(ck+' § '+grp).rows;
+    html+='<tbody class="grupo"><tr class="grp"><td>'+(modo==='mes'?'MES: ':'CATEGORÍA: ')+esc(grp)+'</td><td class="num">'+qty(qtyOf(rs))+'</td><td class="num">'+money(total(rs))+'</td></tr>';open=true}
+   html+='<tr class="art"><td><span class="art-name" title="'+esc(e.art+(e.artId==null?'':' [ID '+e.artId+']'))+'">'+esc(e.art)+(e.artId==null?'':' <small>[ID '+e.artId+']</small>')+'</span> <button class="ghost" data-i="'+i+'">Ver renglones</button></td><td class="num">'+(e.cantidad?qty(e.cantidad):'—')+'</td><td class="num">'+money(e.importe)+'</td></tr>';
+  });
+  if(open)html+='</tbody>';
+  const t=total(rows);
+  html+='</tbody><tbody><tr class="total"><td>TOTAL COSTOS Y GASTOS</td><td class="num">'+qty(qtyOf(rows))+'</td><td class="num">'+money(t)+'</td></tr></tbody></table></div>';
+  target.innerHTML=html;
+  const rec=amount(included.filter(r=>!isIncome(r)));
+  note.innerHTML=rows.length+' conceptos · comprobantes de gasto '+qty(included.filter(r=>!isIncome(r)).length)+
+   ' · importe de la tabla '+money(t)+' · costos y gastos reconocidos '+money(rec)+' · diferencia '+money(t-rec)+
+   (q?' · total sin búsqueda '+money(total(expenseRows)):'')+
+   '. Incluye renglones sin artículo («Sin renglón de artículo») para que el total cierre con el resultado. Las compras de materias primas figuran pendientes de devengamiento y no son costo vendido.';
+ }
 function renderArticleDetails(){
  const query=$('articulo').value.trim().toLocaleLowerCase('es');
  const includedIds=new Set(included.map(r=>r.id));
@@ -159,11 +240,12 @@ function render(){
  current=invalid?[]:DATA.registros.filter(r=>(!company||r.empresa===company)&&(!from||(r.fecha&&r.fecha>=from))&&(!to||(r.fecha&&r.fecha<=to)));
  included=current.filter(r=>r.estado_analisis==='incluido');
  articleRows=buildArticleRows();
+ expenseRows=buildExpenseRows();
  const revenue=amount(included.filter(isIncome)),expenses=amount(included.filter(r=>!isIncome(r)));
  const salesUnits=unitsByUm(articleRows);
  $('kpis').innerHTML=[['Ingresos reconocidos',money(revenue)],['Costos y gastos registrados',money(expenses)],['Resultado parcial',money(revenue-expenses)],['Unidades de artículos vendidas',salesUnits],['Comprobantes reconocidos',qty(included.length)],['Pendientes',qty(current.filter(r=>r.estado_analisis==='pendiente').length)]].map(([l,v])=>'<div class="kpi"><small>'+esc(l)+'</small><b>'+v+'</b></div>').join('');
  $('range').textContent=(from||'Inicio disponible')+' → '+(to||'Fin disponible')+' · '+current.length+' registros';
- renderCompanies();renderArticles();renderArticleDetails();renderDispatch();renderControl();
+ renderCompanies();renderArticles();renderExpenses();renderArticleDetails();renderDispatch();renderControl();
 }
 function csv(name,heads,rows){
  const cell=v=>'"'+String(v??'').replace(/^[=+@\t\r]/,"'$&").replace(/"/g,'""')+'"';
@@ -171,19 +253,27 @@ function csv(name,heads,rows){
  const url=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 ['desde','hasta','empresa'].forEach(id=>$(id).addEventListener('change',render));
-$('agrupar').addEventListener('change',()=>{articleRows=buildArticleRows();renderArticles();renderArticleDetails()});
-$('articulo').addEventListener('input',()=>{renderArticles();renderArticleDetails()});$('buscar-control').addEventListener('input',renderControl);
-$('article-table').addEventListener('click',ev=>{
- const btn=ev.target.closest('button[data-i]');if(!btn)return;
- const tr=btn.closest('tr'),next=tr.nextElementSibling;
- if(next&&next.classList.contains('detalle')){next.remove();btn.textContent='Ver renglones';return}
- const e=articleVisible[+btn.dataset.i];
- const dr=document.createElement('tr');dr.className='detalle';
- const td=document.createElement('td');td.colSpan=3;td.innerHTML=lineTable(articleLines.get(e.key)||[]);
- dr.append(td);tr.after(dr);btn.textContent='Ocultar renglones';
-});
+const rebuild=()=>{articleRows=buildArticleRows();expenseRows=buildExpenseRows();renderArticles();renderExpenses();renderArticleDetails()};
+$('agrupar').addEventListener('change',rebuild);
+$('articulo').addEventListener('input',()=>{renderArticles();renderExpenses();renderArticleDetails()});$('buscar-control').addEventListener('input',renderControl);
+function attachDetail(id,rowsFn,linesFn){
+ $(id).addEventListener('click',ev=>{
+  const btn=ev.target.closest('button[data-i]');if(!btn)return;
+  const tr=btn.closest('tr'),next=tr.nextElementSibling;
+  if(next&&next.classList.contains('detalle')){next.remove();btn.textContent='Ver renglones';return}
+  const e=rowsFn()[+btn.dataset.i];
+  const dr=document.createElement('tr');dr.className='detalle';
+  const td=document.createElement('td');td.colSpan=3;
+  const ls=linesFn().get(e.key)||[];
+  td.innerHTML=ls.length?lineTable(ls):'<p class="empty">Sin renglones de artículo: importe tomado de la cabecera del comprobante.</p>';
+  dr.append(td);tr.after(dr);btn.textContent='Ocultar renglones';
+ });
+}
+attachDetail('article-table',()=>articleVisible,()=>articleLines);
+attachDetail('expense-table',()=>expenseVisible,()=>expenseLines);
 $('limpiar').onclick=()=>{$('desde').value='';$('hasta').value='';$('empresa').value='';$('articulo').value='';$('buscar-control').value='';render()};
 $('exportar').onclick=()=>csv('estado_resultados_registros.csv',['ID','Fecha','Empresa','Concepto','Cuenta','Referencia','Cliente','Flujo','Estado','Tratamiento','Motivo','Neto','Impuestos','Total','Fiscal separado','Importe resultado','Relaciones'],current.filter(r=>r.estado_analisis!=='relacionado').map(r=>[r.id,r.fecha,r.empresa,r.concepto,r.cuenta,r.referencia,r.cliente,r.flujo,r.estado,r.estado_analisis,r.motivo,r.neto==null?'':r.neto/100,r.impuestos==null?'':r.impuestos/100,r.total==null?'':r.total/100,r.fiscal_separado/100,r.importe_resultado/100,r.relacionados.join(', ')]));
-$('exportar-articulos').onclick=()=>csv('estado_resultados_articulos.csv',['Empresa','Agrupación','Artículo','ID artículo','Unidad','Unidades facturadas','Ajustes de cantidad a revisar','Ventas netas sin IVA','Costo registrado','Otros ingresos'],(articleVisible.length?articleVisible:articleRows).map(r=>[r.empresa,r.grupo,r.art,r.artId,r.um,r.unidades,r.revisar,r.ventas/100,r.costo/100,r.otros/100]));
+$('exportar-articulos').onclick=()=>csv('estado_resultados_articulos.csv',['Empresa','Agrupación','Artículo','ID artículo','Unidad','Unidades facturadas','Ajustes de cantidad a revisar','Ventas netas sin IVA'],(articleVisible.length?articleVisible:articleRows).map(r=>[r.empresa,r.grupo,r.art,r.artId,r.um,r.unidades,r.revisar,r.ventas/100]));
+$('exportar-gastos').onclick=()=>csv('estado_resultados_gastos.csv',['Empresa','Agrupación','Artículo','ID artículo','Cantidad','Renglones','Importe sin IVA'],(expenseVisible.length?expenseVisible:expenseRows).map(r=>[r.empresa,r.grupo,r.art,r.artId==null?'':r.artId,r.cantidad,r.renglones,r.importe/100]));
 $('stamp').textContent='Datos consultados: '+DATA.generado.replace('T',' ')+' · '+DATA.controles.registros+' cabeceras verificadas';
 render();

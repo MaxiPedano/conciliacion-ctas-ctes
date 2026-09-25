@@ -27,6 +27,25 @@ def main():
         })()""")
         assert page.locator('#kpis .kpi').count()==6
         assert 'artículos' in page.locator('#article-note').inner_text()
+        # Ventas por artículo: solo productos. Servicios/fletes quedan fuera y el total cierra.
+        assert page.evaluate('otherSalesRows.length>0 && otherSales>0')
+        assert page.evaluate("""(()=>{
+          const rec=amount(included.filter(r=>r.concepto==='Ventas netas facturadas'));
+          const prod=articleRows.reduce((s,e)=>s+e.ventas,0);
+          return Math.abs(prod+otherSales-rec)<1;
+        })()""")
+        assert page.locator('#article-other details').count()==1
+        assert page.evaluate("otherSalesRows.every(o=>/FLETE|SERVICIO|TRASLADO|BORDADO/i.test(o.art))")
+        # Costos y gastos por artículo: tabla propia y total que cierra con lo reconocido.
+        assert page.locator('#expense-sales-table').count()==1
+        assert page.locator('#expense-sales-table tr.grp').count()>0
+        assert page.locator('#expense-sales-table tr.total').count()==1
+        assert page.evaluate("""(()=>{
+          const rec=amount(included.filter(r=>!isIncome(r)));
+          const tot=document.querySelector('#expense-sales-table tr.total td:nth-child(3)').textContent;
+          return rec>0 && tot===money(rec);
+        })()""")
+        assert page.evaluate('expenseRows.length>0 && expenseRows.every(e=>e.importe!==0)')
         assert page.locator('#company-table tbody tr').count()==3
         # Desplegar los renglones de una fila de artículo y plegarlos de nuevo.
         page.locator('#sales-table tr.art button.ghost').first.click()
@@ -58,6 +77,12 @@ def main():
         month_amount=page.evaluate('included.reduce((s,r)=>s+r.signo*r.importe_resultado,0)')
         assert page.locator('#monthly tbody tr').count()==1
         assert page.locator('#monthly tbody tr td').last.inner_text()==page.evaluate('money('+str(month_amount)+')')
+        # Con filtro de fechas/empresa la tabla de gastos también se recalcula y cierra.
+        assert page.evaluate("""(()=>{
+          const rec=amount(included.filter(r=>!isIncome(r)));
+          const tot=document.querySelector('#expense-sales-table tr.total td:nth-child(3)').textContent;
+          return tot===money(rec);
+        })()""")
         # Desplegar concepto -> cuenta -> registros reales (no DOM simulado).
         page.locator('#company-detail > details > details > summary').first.click()
         page.locator('#company-detail > details > details[open] > details > summary').first.click()
@@ -78,6 +103,11 @@ def main():
         art=list(csv.DictReader(io.StringIO(Path(download.value.path()).read_text(encoding='utf-8-sig')),delimiter=';'))
         assert art and all(r['Empresa']=='Avanzia' for r in art)
         assert abs(sum(float(r['Ventas netas sin IVA']) for r in art)-page.evaluate('articleRows.reduce((s,e)=>s+e.ventas,0)/100'))<0.01
+        with page.expect_download() as download:
+            page.locator('#exportar-gastos').click()
+        gas=list(csv.DictReader(io.StringIO(Path(download.value.path()).read_text(encoding='utf-8-sig')),delimiter=';'))
+        assert gas and all(r['Empresa']=='Avanzia' for r in gas)
+        assert abs(sum(float(r['Importe sin IVA']) for r in gas)-page.evaluate('expenseRows.reduce((s,e)=>s+e.importe,0)/100'))<0.01
         page.locator('#articulo').fill('NO EXISTE ESTE ARTICULO 98765')
         assert page.locator('#sales-table').count()==0
         assert 'Sin artículos' in page.locator('#article-table').inner_text()
@@ -100,6 +130,8 @@ def main():
         assert 'Sin importes reconocidos' in page.locator('#company-detail').inner_text()
         assert page.locator('#sales-table').count()==0
         assert 'Sin artículos' in page.locator('#article-table').inner_text()
+        assert page.locator('#expense-sales-table').count()==0
+        assert 'Sin costos ni gastos' in page.locator('#expense-table').inner_text()
         page.set_viewport_size({'width':390,'height':844})
         assert page.locator('#desde').is_visible()
         assert not errors,errors

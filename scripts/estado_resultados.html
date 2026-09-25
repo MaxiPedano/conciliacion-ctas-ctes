@@ -18,16 +18,23 @@ Importes netos según el sistema, en moneda de registro; no se aplica conversió
 El resultado es parcial: compras de materias primas sin consumo, documentos sin cuenta, estados no confirmados y diferencias quedan separados.
 Un cero significa «sin importe reconocido», no ausencia comprobada de gastos.</div>
 <div id="kpis" class="kpis"></div>
-<nav><a href="#ventas-articulo">Ventas por artículo</a><a href="#empresas">Por empresa</a><a href="#meses">Por mes</a><a href="#articulos">Costos por artículo</a><a href="#despachos">Remitos</a><a href="#control">Control de integridad</a><a href="#metodo">Criterios</a></nav>
-<section id="ventas-articulo"><h2>Ventas por artículo · unidades e importes</h2>
-<p>Categoría, artículos, <strong>unidades facturadas</strong> e <strong>importes sin IVA</strong> en una sola tabla. Cada fila de categoría y cada total son visibles sin abrir menús. Los remitos no suman acá.</p>
+<nav><a href="#ventas-articulo">Ventas por artículo</a><a href="#gastos-articulo">Costos y gastos por artículo</a><a href="#empresas">Por empresa</a><a href="#meses">Por mes</a><a href="#articulos">Detalle de renglones</a><a href="#despachos">Remitos</a><a href="#control">Control de integridad</a><a href="#metodo">Criterios</a></nav>
+<section id="ventas-articulo"><h2>Ventas por artículo · solo productos facturados</h2>
+<p>Sillas, mesas y demás <strong>artículos de venta</strong>: categoría, unidades facturadas e importe sin IVA en una sola tabla, con subtotales y total visibles sin abrir menús.
+Servicios y artículos sin imputación (flete, despachos, servicio genérico) <strong>no entran acá</strong>: su importe queda informado debajo y los gastos se ven en la sección siguiente. Los remitos no suman.</p>
 <div class="filters sub"><label>Agrupar por <select id="agrupar"><option value="cat">Categoría y artículo</option><option value="mes">Mes y artículo</option></select></label>
-<label>Buscar artículo <input id="articulo" type="search" placeholder="Nombre o ID (solo estas tablas)"></label>
-<button id="exportar-articulos">CSV de artículos filtrados</button></div>
-<div id="article-table"></div><p id="article-note" class="note"></p></section>
+<label>Buscar artículo <input id="articulo" type="search" placeholder="Nombre o ID (busca en ambas tablas)"></label>
+<button id="exportar-articulos">CSV de artículos de venta</button></div>
+<div id="article-table"></div><p id="article-note" class="note"></p><div id="article-other" class="note"></div></section>
+<section id="gastos-articulo"><h2>Costos y gastos por artículo · compras y gastos</h2>
+<p>Otro lado del estado: lo que se compró y se gastó, agrupado por categoría y artículo con cantidad e importe, con el mismo filtro de fechas y empresa.
+Los renglones sin artículo figuran como «Sin renglón de artículo» para que el total cierre con lo reconocido. Materias primas pendientes de devengamiento no son costo vendido.</p>
+<div class="filters sub"><span class="muted">Misma búsqueda de artículo y misma agrupación que la tabla de ventas</span>
+<button id="exportar-gastos">CSV de costos y gastos</button></div>
+<div id="expense-table"></div><p id="expense-note" class="note"></p></section>
 <section id="empresas"><h2>Estado por empresa</h2><p>Desplegá cada concepto y cuenta para ver los comprobantes. No hay eliminaciones interempresa: «Todas» es suma de unidades, no consolidación contable.</p><div id="company-table"></div><div id="company-detail"></div></section>
 <section id="meses"><h2>Evolución mensual</h2><div id="monthly"></div></section>
-<section id="articulos"><h2>Costos y gastos por artículo · detalle de renglones</h2>
+<section id="articulos"><h2>Detalle de renglones · ventas, costos y gastos</h2>
 <p>Identificación por ID de artículo. Un insumo comprado no se asigna automáticamente a una silla vendida. Compras y gastos genéricos permanecen en «Sin imputación a producto».
 Los costos mostrados son los <strong>registrados</strong>, no un costo unitario validado contra inventario. Margen por producto: <strong>no determinado</strong> hasta conciliar consumo y existencias.</p>
 <div id="article-detail"></div></section>

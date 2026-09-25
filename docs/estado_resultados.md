@@ -19,26 +19,39 @@ fuentes (cabeceras, renglones, cuentas, relaciones). No modifica cuentas ni docu
 El backup completo tampoco se publica. Se publican únicamente el HTML generado, sus assets,
 generador, pruebas y documentación. La conciliación histórica conserva sus CSV/pickle.
 
-## Vista principal: ventas por artículo
+## Vista principal: ventas por artículo (solo productos) y gastos aparte
 
 La primera sección es una tabla plana, sin menús, para leer cantidades e importes de un
-vistazo (misma forma que la consulta agrupada por categoría/artículo del usuario):
+vistazo (misma forma que la consulta agrupada por categoría/artículo):
 
 - Columnas: **Categoría / Artículo**, **Unidades facturadas**, **Importe sin IVA**.
 - Encabezado de categoría con subtotal propio, encabezado de empresa con subtotal propio
-  y fila de **TOTAL VENTAS FACTURADAS** al pie. Todo visible sin desplegar nada.
+  y fila de **TOTAL ARTÍCULOS VENDIDOS** al pie. Todo visible sin desplegar nada.
+- **Solo productos**: sillas, mesas, banquetas, piezas para mesa, almohadones y afines.
+  Fletes, servicios de bordado, despachos, traslados, logos y similares quedan fuera de
+  la tabla y aparecen en «Servicios y otros conceptos facturados» (lista plegable debajo),
+  de modo que producto + servicios = ventas facturadas totales (hoy:
+  3.080.487.193,64 + 38.046.904,79 = 3.118.534.098,43).
 - Cada fila de artículo tiene «Ver renglones», que abre los comprobantes que la componen
   (registro, fecha, cliente, cantidad e importe) y se vuelve a plegar.
-- Filtros globales (desde/hasta/empresa) y búsqueda de artículo aplican a la tabla;
+- Filtros globales (desde/hasta/empresa) y búsqueda de artículo aplican a ambas tablas;
   el selector **Agrupar por** alterna «Categoría y artículo» y «Mes y artículo».
-- Unidades: solo bienes de ventas facturadas; servicios y artículos genéricos no cuentan
-  unidades. Los 8 comprobantes con importe negativo y cantidad positiva no suman unidades:
-  aparecen marcados «a revisar».
-- El total de renglones de venta coincide con las ventas reconocidas en el estado de
-  resultados (diferencia informada debajo de la tabla; hoy es 0,00).
-- Remitos de salida nunca suman en esta tabla: quedan en «Remitos · separados de ventas».
-- CSV de artículos filtrados: empresa, agrupación, artículo, ID, unidades, ajustes a
-  revisar, ventas netas, costo registrado y otros ingresos.
+- Unidades: solo bienes de ventas facturadas; el sistema no registra unidad de medida
+  (`articulos.um` vacío), por eso las cantidades se leen como unidades. Los 8 comprobantes
+  con importe negativo y cantidad positiva no suman unidades: aparecen «a revisar».
+- Los remitos de salida nunca suman: quedan en «Remitos · separados de ventas».
+
+La **segunda sección** es «Costos y gastos por artículo · compras y gastos», con la misma
+forma de tabla (categoría, artículo, **cantidad** e **importe sin IVA**, subtotales y total):
+
+- Incluye los renglones sin artículo como «Sin renglón de artículo», de modo que el total
+  de la tabla coincide exactamente con los costos y gastos reconocidos (hoy 3.133.227.012,21,
+  diferencia 0,00).
+- Categorías de gasto: metalúrgica, carpintería, tapicería, pintura, materia prima, embalaje,
+  servicios externos/internos, ítem financiero, entre otras.
+- Las compras de materias primas siguen figurando como pendientes de devengamiento: no son
+  costo vendido.
+- CSV independiente para cada tabla (artículos de venta / costos y gastos).
 
 ## Decisiones contables verificables
 
