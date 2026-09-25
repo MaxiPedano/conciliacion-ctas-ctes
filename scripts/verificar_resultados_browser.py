@@ -12,7 +12,38 @@ def main():
         page.on('pageerror',lambda error: errors.append(str(error)))
         page.goto((ROOT/'reporte_estado_resultados.html').as_uri())
         page.wait_for_function('included.length > 0')
+        assert page.locator('#sales-table').count()==1
+        assert page.locator('#sales-table tbody tr.grp').count()>0
+        assert page.locator('#sales-table tbody tr.art').count()>0
+        assert page.locator('#sales-table tbody tr.total').count()==1
+        # Total de la tabla plana = suma de artículos visibles, y subtotales por categoría cuadran con el total.
+        assert page.evaluate("""(()=>{
+          const art=[...document.querySelectorAll('#sales-table tr.art td:nth-child(3)')].map(t=>t.textContent);
+          const grp=[...document.querySelectorAll('#sales-table tr.grp td:nth-child(3)')].map(t=>t.textContent);
+          const tot=document.querySelector('#sales-table tr.total td:nth-child(3)').textContent;
+          const n=articleRows.reduce((s,e)=>s+e.ventas,0);
+          return art.length===articleRows.length && tot===money(n) && grp.length>0
+            && grp.every(v=>v!=='No disponible');
+        })()""")
+        assert page.locator('#kpis .kpi').count()==6
+        assert 'artículos' in page.locator('#article-note').inner_text()
         assert page.locator('#company-table tbody tr').count()==3
+        # Desplegar los renglones de una fila de artículo y plegarlos de nuevo.
+        page.locator('#sales-table tr.art button.ghost').first.click()
+        assert page.locator('#sales-table tr.detalle').count()==1
+        assert page.locator('#sales-table tr.detalle tbody tr').count()>0
+        assert page.locator('#sales-table tr.art button.ghost').first.inner_text()=='Ocultar renglones'
+        page.locator('#sales-table tr.art button.ghost').first.click()
+        assert page.locator('#sales-table tr.detalle').count()==0
+        # Agrupación por mes: los encabezados pasan a ser meses y el total se conserva.
+        total_all=page.evaluate('money(articleRows.reduce((s,e)=>s+e.ventas,0))')
+        page.locator('#agrupar').select_option('mes')
+        assert page.locator('#sales-table tr.grp').count()>0
+        assert page.evaluate("""[...document.querySelectorAll('#sales-table tr.grp td:first-child')].every(t=>t.textContent.startsWith('MES: '))""")
+        assert page.locator('#sales-table tr.total td:nth-child(3)').inner_text()==total_all
+        page.locator('#agrupar').select_option('cat')
+        assert page.locator('#sales-table tr.total td:nth-child(3)').inner_text()==total_all
+
         assert page.evaluate('current.length === DATA.controles.registros')
         assert page.evaluate('included.every(r=>r.estado_id!==1114)')
         assert page.evaluate('DATA.registros.length === new Set(DATA.registros.map(r=>r.id)).size')
@@ -33,8 +64,6 @@ def main():
         page.wait_for_selector('#company-detail tbody tr')
         assert page.locator('#company-detail tbody tr').count()>0
         assert all('2026-01-' in x for x in page.locator('#company-detail tbody tr td:nth-child(2)').all_text_contents())
-        page.locator('#article-table details > summary').first.click()
-        assert page.locator('#article-table details[open] tbody tr').count()>0
         with page.expect_download() as download:
             page.locator('#exportar').click()
         content=Path(download.value.path()).read_text(encoding='utf-8-sig')
@@ -42,8 +71,18 @@ def main():
         rows=list(csv.DictReader(io.StringIO(content),delimiter=';'))
         assert rows and all(r['Empresa']=='Avanzia' and '2026-01-01'<=r['Fecha']<='2026-01-31' for r in rows)
         assert all(r['Tratamiento']!='relacionado' for r in rows)
+        # La tabla de artículos respeta fechas y empresa: los renglones abiertos son del mes filtrado.
+        assert page.evaluate("included.filter(r=>r.concepto==='Ventas netas facturadas').every(r=>r.fecha>='2026-01-01'&&r.fecha<='2026-01-31'&&r.empresa==='Avanzia')")
+        with page.expect_download() as download:
+            page.locator('#exportar-articulos').click()
+        art=list(csv.DictReader(io.StringIO(Path(download.value.path()).read_text(encoding='utf-8-sig')),delimiter=';'))
+        assert art and all(r['Empresa']=='Avanzia' for r in art)
+        assert abs(sum(float(r['Ventas netas sin IVA']) for r in art)-page.evaluate('articleRows.reduce((s,e)=>s+e.ventas,0)/100'))<0.01
         page.locator('#articulo').fill('NO EXISTE ESTE ARTICULO 98765')
-        assert page.locator('#article-table details').count()==0
+        assert page.locator('#sales-table').count()==0
+        assert 'Sin artículos' in page.locator('#article-table').inner_text()
+        page.locator('#articulo').fill('')
+        assert page.locator('#sales-table').count()==1
         page.locator('#desde').fill('2026-02-01');page.locator('#desde').dispatch_event('change')
         assert page.locator('#error').is_visible()
         assert page.evaluate('current.length===0 && included.length===0')
@@ -59,6 +98,8 @@ def main():
         page.locator('#empresa').select_option(label='Sin empresa identificada')
         assert page.evaluate('included.length===0')
         assert 'Sin importes reconocidos' in page.locator('#company-detail').inner_text()
+        assert page.locator('#sales-table').count()==0
+        assert 'Sin artículos' in page.locator('#article-table').inner_text()
         page.set_viewport_size({'width':390,'height':844})
         assert page.locator('#desde').is_visible()
         assert not errors,errors
