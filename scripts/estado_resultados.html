@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avanzia | Estado de resultados</title>
+<link rel="stylesheet" href="assets/estado_resultados.css"></head><body>
+<main>
+<header><a href="index.html">← Centro de reportes</a><p class="eyebrow">AVANZIA · INFORMACIÓN DE GESTIÓN</p>
+<h1>Estado de resultados</h1><p>Ingresos y gastos por empresa · Artículos facturados · Registros trazables</p>
+<p id="stamp"></p><span class="badge">Provisional · según registros y cuentas disponibles</span></header>
+<section class="filters" aria-label="Filtros globales">
+<label>Fecha desde <input id="desde" type="date"></label><label>Fecha hasta <input id="hasta" type="date"></label>
+<label>Empresa / unidad contable <select id="empresa"><option value="">Todas</option><option>Avanzia</option><option>Condiseño</option><option>Bistro</option><option>Sin empresa identificada</option></select></label>
+<button id="limpiar">Todos los períodos</button><button id="exportar">Descargar registros filtrados CSV</button>
+<span id="range" role="status"></span></section>
+<p id="error" role="alert" hidden></p>
+<div class="notice"><strong>Lectura contable:</strong> facturas y remitos están separados. Los pagos/cobros vinculados no duplican comprobantes.
+La empresa proviene de la rama de la <strong>cuenta propia</strong>, no del nombre del cliente ni del flujo.
+Importes netos según el sistema, en moneda de registro; no se aplica conversión monetaria.
+El resultado es parcial: compras de materias primas sin consumo, documentos sin cuenta, estados no confirmados y diferencias quedan separados.
+Un cero significa «sin importe reconocido», no ausencia comprobada de gastos.</div>
+<div id="kpis" class="kpis"></div>
+<nav><a href="#empresas">Por empresa</a><a href="#meses">Por mes</a><a href="#articulos">Por artículo</a><a href="#despachos">Remitos</a><a href="#control">Control de integridad</a><a href="#metodo">Criterios</a></nav>
+<section id="empresas"><h2>Estado por empresa</h2><p>Desplegá cada concepto y cuenta para ver los comprobantes. No hay eliminaciones interempresa: «Todas» es suma de unidades, no consolidación contable.</p><div id="company-table"></div><div id="company-detail"></div></section>
+<section id="meses"><h2>Evolución mensual</h2><div id="monthly"></div></section>
+<section id="articulos"><h2>Ingresos y gastos por artículo del comprobante</h2>
+<p>Identificación por ID de artículo. Un insumo comprado no se asigna automáticamente a una silla vendida. Compras y gastos genéricos permanecen en «Sin imputación a producto».
+Los costos mostrados son los <strong>registrados</strong>, no un costo unitario validado contra inventario. Margen por producto: <strong>no determinado</strong> hasta conciliar consumo y existencias.</p>
+<label>Buscar artículo <input id="articulo" type="search" placeholder="Nombre o ID (solo esta sección)"></label>
+<button id="exportar-articulos">CSV de artículos filtrados</button><div id="article-table"></div></section>
+<section id="despachos"><h2>Remitos de salida · separados de ventas</h2><p>Se muestran cantidades despachadas por artículo; no suman unidades facturadas ni ingresos. Sin cuenta propia, la empresa queda sin identificar.</p><div id="dispatch-table"></div></section>
+<section id="control"><h2>Control de integridad</h2><div id="controls"></div>
+<p>Los registros sin cuenta propia cuyo relacionado tiene cuenta se informan únicamente como cantidad; no aparecen en la lista de pendientes ni se hereda una cuenta del pago.</p>
+<label>Buscar en controles <input id="buscar-control" type="search" placeholder="ID, referencia, cliente o motivo"></label>
+<div id="audit"></div></section>
+<section id="metodo"><h2>Cómo se construye</h2><ul>
+<li>Fecha de cabecera, límites inclusivos. Todos los años disponibles, incluido 2023. Todos los cuadros y detalles respetan desde/hasta y empresa. Sin fecha queda separado cuando hay rango.</li>
+<li>Ventas: flujos 10781 y 11547 en estado 1319 (FACTURA DE VENTA). Órdenes y notificaciones a producción no son ventas facturadas. Remitos de salida (1114) son solo despachos.</li>
+<li>Gastos: cuenta propia de resultados y estado reconocido de factura de compra, recibo de sueldo, comprobante de socio, gasto operativo o caja archivada independiente. No se supone que todo egreso es gasto.</li>
+<li>Compras en materias primas: pendientes de devengamiento. Costo de ventas: solo cuentas expresamente denominadas así; sin inferir consumo o valuación de stock. Gastos de fábrica se muestran según la imputación contable original.</li>
+<li>Base neta: totalprecio de cabecera y preciototal de renglones. totalimpuestos/preciototalimpu son totales con impuestos. IVA y percepciones explícitas dentro de renglones se separan; IVA no computable conserva su imputación como gasto.</li>
+<li>Relaciones consultadas en ambos sentidos y deduplicadas por ID. Un pago relacionado con varias facturas no une las facturas: cada comprobante se evalúa una vez por su cuenta propia, incluso si el pago está fuera del período seleccionado.</li>
+<li>Signos monetarios originales conservados. Importes negativos con cantidades positivas pueden ser bonificaciones: su importe resta, pero sus unidades quedan «a revisar», no se suman como ventas ni se restan como devolución física sin evidencia. Posibles notas de crédito positivas se separan para revisión. No se asume que una reversión de caja sea una nota de crédito fiscal.</li>
+<li>Se usa el estado de statusflows, como en la consulta de origen. Las diferencias con statusid de cabecera se muestran en el control de integridad.</li>
+<li>No se determina resultado neto definitivo: faltan validación de costos consumidos, inventarios, devengamientos, amortizaciones e impuesto a las ganancias. Ingresos financieros siguen la cuenta asignada: revisar que rescates de capital no estén imputados como intereses.</li>
+<li>Los gastos sin vínculo a un producto vendido no se prorratean. El artículo del renglón es evidencia del documento, no un centro de costos validado. No se suman cantidades con distintas unidades de medida.</li>
+</ul></section>
+<footer>Fuente: Imple / test9000 · Consulta de solo lectura · <a href="index.html">Volver al inicio</a></footer>
+</main><script id="datos-resultados" type="application/json">__DATOS_RESULTADOS__</script>
+<script src="assets/estado_resultados.js"></script></body></html>

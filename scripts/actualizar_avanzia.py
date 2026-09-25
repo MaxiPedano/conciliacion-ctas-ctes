@@ -94,7 +94,7 @@ def main():
                         cur.execute('SELECT current_database(), count(*) FROM test9000.registrocab')
                         print('Origen verificado:', cur.fetchone(), flush=True)
                 for script in ['reporte_cuentas_contables.py', 'reporte_cuenta_corriente.py',
-                               'reporte_investigacion.py', 'reporte_html.py']:
+                                'reporte_investigacion.py', 'reporte_html.py', 'reporte_resultados.py']:
                     subprocess.run([sys.executable, str(ROOT / 'scripts' / script)],
                                    cwd=ROOT, env=env, check=True, timeout=600)
                 print('Reportes completados. Conciliacion conserva fuentes historicas CSV/pickle.', flush=True)
