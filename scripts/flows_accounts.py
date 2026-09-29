@@ -5,7 +5,12 @@ import re
 import psycopg2
 from itsdangerous import BadData, URLSafeTimedSerializer
 
-FLOW_IDS = [10150, 10303, 11344, 11433, 11332]
+FLOW_IDS = [10150, 10303, 10781, 11344, 11433, 11332]
+
+# Estados cuyo nombre indica que el registro no lleva cuenta contable
+# (ej. 1147 "ARCHIVO egreso cajas (sin cuenta contable)"). Solo generan
+# advertencia: no bloquean la verificación.
+SIN_CUENTA_STATUS_IDS = [1147]
 
 
 class Conflict(Exception):
@@ -60,6 +65,11 @@ def inspect(cursor, batches, lock=False):
     records = {str(row[0]): {'account': row[1], 'version': row[2]} for row in cursor.fetchall()}
     if set(records) != {str(value) for value in ids}:
         raise Conflict('Hay registros inexistentes o fuera de los flujos permitidos.')
+    cursor.execute("""SELECT rc.id, rc.statusid, s.descrip FROM test9000.registrocab rc
+        LEFT JOIN test9000.statuses s ON s.id = rc.statusid
+        WHERE rc.id = ANY(%s)""", (ids,))
+    for record_id, status_id, status_name in cursor.fetchall():
+        records[str(record_id)]['status'] = {'id': status_id, 'name': status_name}
     return names, records
 
 
@@ -93,8 +103,15 @@ def execute(operation, payload, key, repository, actor, connection_factory=conne
                     raise Conflict('Hay registros que ya tienen cuenta en Flows. Actualice el reporte antes de continuar.')
                 token = signer.dumps({'batches': batches, 'records': records,
                                       'repository': repository, 'actor': actor})
+                status_warnings = [
+                    {'record_id': int(record_id), 'status_id': (row.get('status') or {}).get('id'),
+                     'status_name': (row.get('status') or {}).get('name')}
+                    for record_id, row in sorted(records.items(), key=lambda item: int(item[0]))
+                    if (row.get('status') or {}).get('id') in SIN_CUENTA_STATUS_IDS
+                ]
                 result = dict(verification_token=token, count=len(records), expires_in=1800,
-                              batches=[dict(batch, account_name=names[batch['account_id']]) for batch in batches])
+                              batches=[dict(batch, account_name=names[batch['account_id']]) for batch in batches],
+                              status_warnings=status_warnings)
             else:
                 # Permite recuperar un guardado confirmado en BD cuya respuesta se perdió.
                 already_saved = all(records[str(record)]['account'] == batch['account_id']

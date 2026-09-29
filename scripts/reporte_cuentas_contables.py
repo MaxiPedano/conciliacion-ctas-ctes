@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genera un reporte separado de cuentas contables asignadas a egresos."""
+"""Genera un reporte separado de cuentas contables asignadas a egresos y ventas."""
 
 import html
 import os
@@ -17,7 +17,7 @@ DB_CONFIG = {
     "password": os.getenv("AVANZIA_DB_PASSWORD") or os.getenv("PGPASSWORD"),
 }
 
-FLOW_IDS = (10150, 10303, 11344, 11433, 11332)
+FLOW_IDS = (10150, 10303, 10781, 11344, 11433, 11332)
 FLOW_IDS_SQL = ", ".join(str(flow_id) for flow_id in FLOW_IDS)
 
 QUERY_DETAIL = f"""
@@ -29,12 +29,15 @@ SELECT
     rc.referenciatexto,
     rc.flowid,
     flow.name AS flow_name,
+    rc.statusid,
+    workflow_status.descrip AS estado_flujo,
     rc.cuentacontableid,
     account.name AS cuenta_contable,
     rc.totalprecio,
     rc.totalimpuestos
 FROM test9000.registrocab rc
 JOIN test9000.categorias flow ON flow.id = rc.flowid
+LEFT JOIN test9000.statuses workflow_status ON workflow_status.id = rc.statusid
 LEFT JOIN test9000.categorias account ON account.id = rc.cuentacontableid
 WHERE rc.flowid IN ({FLOW_IDS_SQL})
 ORDER BY rc.fecha, rc.id;
@@ -222,12 +225,14 @@ def build_detail_rows(df):
         client_name = "" if empty(row["clientname"]) else str(row["clientname"])
         reference = "" if empty(row["referenciatexto"]) else str(row["referenciatexto"])
         flow_name = str(row["flow_name"])
+        workflow_status = "" if empty(row["estado_flujo"]) else str(row["estado_flujo"])
         rows.append(
             f"<tr class=\"detail-row\" data-date=\"{attribute(date_value)}\" "
             f"data-accountid=\"{attribute(account_id)}\" "
             f"data-account=\"{attribute(account_name)}\" "
             f"data-status=\"{attribute(status)}\" "
             f"data-flow=\"{attribute(flow_name)}\" "
+            f"data-statusflow=\"{attribute(workflow_status)}\" "
             f"data-clientname=\"{attribute(client_name)}\" "
             f"data-reference=\"{attribute(reference)}\" "
             f"data-amount=\"{attribute(row['totalprecio'])}\">"
@@ -241,6 +246,7 @@ def build_detail_rows(df):
             f"<td><span class=\"badge {account_badge_class(status)}\">{text(status)}</span></td>"
             f"<td class=\"currency\">{money(row['totalprecio'])}</td>"
             f"<td class=\"currency\">{money(row['totalimpuestos'])}</td>"
+            f"<td>{text(row['estado_flujo'], 'SIN ESTADO')}</td>"
             "</tr>"
         )
     return "\n".join(rows)
@@ -287,6 +293,7 @@ def generate_report():
     account_html = build_account_rows(df_accounts)
     flow_html = build_flow_rows(df_flows)
     flow_options = option_rows(df_detail["flow_name"].dropna().unique())
+    statusflow_options = option_rows(df_detail["estado_flujo"].dropna().unique())
     all_account_options = build_account_options(df_all_accounts)
 
     total_records = len(df_detail)
@@ -302,7 +309,7 @@ def generate_report():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Cuentas Contables - Egresos</title>
+    <title>Reporte de Cuentas Contables - Egresos y Ventas</title>
     <style>
         * {{ box-sizing: border-box; }}
         body {{ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #f3f6f8; color: #263238; line-height: 1.45; }}
@@ -387,8 +394,8 @@ def generate_report():
 <div class="container">
     <header>
         <h1>REPORTE DE CUENTAS CONTABLES</h1>
-        <p class="subtitle">Egresos de proveedores y flujos relacionados</p>
-        <p class="subtitle">Flujos: 10150, 10303, 11344, 11433 y 11332</p>
+        <p class="subtitle">Egresos de proveedores, ventas y flujos relacionados</p>
+        <p class="subtitle">Flujos: 10150, 10303, 10781, 11344, 11433 y 11332</p>
         <p class="subtitle">Generado: {generated_at}</p>
     </header>
 
@@ -441,6 +448,9 @@ def generate_report():
                             </label>
                             <label>Flujo
                                 <select id="flow-filter"><option value="">Todos</option>{flow_options}</select>
+                            </label>
+                            <label>Estado del flujo
+                                <select id="statusflow-filter"><option value="">Todos</option>{statusflow_options}</select>
                             </label>
                             <label>clientname
                                 <input id="client-filter" type="search" placeholder="Nombre del perfil">
@@ -497,8 +507,8 @@ def generate_report():
             </details>
         </div>
         <div class="table-wrap"><table id="detail-table" data-excel-table data-excel-title="Registros Involucrados">
-            <thead><tr><th>registrocab</th><th>fecha</th><th>clientname</th><th>referencia</th><th>flujo</th><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>totalprecio</th><th>impuestos</th></tr></thead>
-            <tbody>{detail_html}<tr id="no-results" class="empty-row"><td colspan="10">No hay registros para los filtros seleccionados.</td></tr></tbody>
+            <thead><tr><th>registrocab</th><th>fecha</th><th>clientname</th><th>referencia</th><th>flujo</th><th>cuentacontableid</th><th>cuenta contable</th><th>estado</th><th>totalprecio</th><th>impuestos</th><th>estado del flujo</th></tr></thead>
+            <tbody>{detail_html}<tr id="no-results" class="empty-row"><td colspan="11">No hay registros para los filtros seleccionados.</td></tr></tbody>
         </table></div>
     </section>
 
@@ -529,6 +539,7 @@ def generate_report():
     const dateTo = document.getElementById('date-to');
     const statusFilter = document.getElementById('status-filter');
     const flowFilter = document.getElementById('flow-filter');
+    const statusflowFilter = document.getElementById('statusflow-filter');
     const clientFilter = document.getElementById('client-filter');
     const referenceFilter = document.getElementById('reference-filter');
     const accountBody = document.getElementById('account-summary-body');
@@ -649,6 +660,7 @@ def generate_report():
     function applyDetailFilters() {{
         const status = statusFilter.value.toLowerCase();
         const flow = flowFilter.value.toLowerCase();
+        const statusflow = statusflowFilter.value.toLowerCase();
         const client = clientFilter.value.trim().toLowerCase();
         const reference = referenceFilter.value.trim().toLowerCase();
         let visible = 0;
@@ -657,6 +669,7 @@ def generate_report():
             const matches = inDateRange(row.dataset.date)
                 && (!status || row.dataset.status.toLowerCase() === status)
                 && (!flow || row.dataset.flow.toLowerCase() === flow)
+                && (!statusflow || (row.dataset.statusflow || '').toLowerCase() === statusflow)
                 && (!client || row.dataset.clientname.toLowerCase().includes(client))
                 && (!reference || row.dataset.reference.toLowerCase().includes(reference));
             row.hidden = !matches;
@@ -670,13 +683,13 @@ def generate_report():
         input.addEventListener('input', function () {{ renderAccountSummary(); renderFlowSummary(); applyDetailFilters(); }});
         input.addEventListener('change', function () {{ renderAccountSummary(); renderFlowSummary(); applyDetailFilters(); }});
     }});
-    [statusFilter, flowFilter, clientFilter, referenceFilter].forEach(function (input) {{
+    [statusFilter, flowFilter, statusflowFilter, clientFilter, referenceFilter].forEach(function (input) {{
         input.addEventListener('input', applyDetailFilters);
         input.addEventListener('change', applyDetailFilters);
     }});
     document.getElementById('clear-date-filters').addEventListener('click', function () {{
         dateFrom.value = ''; dateTo.value = '';
-        statusFilter.value = ''; flowFilter.value = '';
+        statusFilter.value = ''; flowFilter.value = ''; statusflowFilter.value = '';
         clientFilter.value = ''; referenceFilter.value = '';
         renderAccountSummary(); renderFlowSummary(); applyDetailFilters();
     }});
