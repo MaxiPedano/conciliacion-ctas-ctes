@@ -1,0 +1,52 @@
+﻿Vista;Fecha;ID/Número;Referencia;Estado/Tipo;Importe sistema;Comprobante proveedor;Resultado
+Pago;28/01/2026;15114;Pago con e-check (Montani Hnos S.A);23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 2.179.536,00;X:0010-00319323;Coincidencia
+Pago;09/03/2026;18734;9-3 Pago a cuenta Policor E cheq Avanzia;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 8.000.000,00;X:0010-00320139;Coincidencia
+Pago;10/04/2026;20429;10-4-26 PAGO POLICOR AVANZIA;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 49.626,68;X:0010-00320874;Coincidencia
+Pago;22/05/2026;17152;Pago FA 0013-00032601 Echeq GConDis;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 3.000.000,00;;Pago sin recibo identificado en el PDF
+Pago;05/06/2026;17530;Pago saldo;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 3.000.000,00;X:0010-00322299;Coincidencia
+Pago;05/06/2026;19126;5-6 PAGO A CUENTA POLICOR;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 1.500.000,00;;Pago sin recibo identificado en el PDF
+Pago;03/07/2026;18517;03-7 A CUENTA POLICOR AVANZIA;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 2.383.442,24;X:0010-00322914;Coincidencia
+Pago;03/07/2026;20726;3/7/26 PAGO A POLICOR ECHEQ 68113314 CONDISEÑO;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 500.000,00;;Pago sin recibo identificado en el PDF
+Pago;08/07/2026;18303;08-07 Pago a Cta Policor;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 13.039.600,83;X:0010-00322991;Coincidencia
+Pago;20/08/2026;19405;20-8-26 PAGO A CUENTA CONDISEÑO;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 4.000.000,00;;Pago sin recibo identificado en el PDF
+Pago;20/08/2026;19407;20-8-26 PAGO A CUENTA AVANZIA;23.1.01a Egreso prov con cta cte (Resta $);$ 4.000.000,00;X:0010-00323797;Coincidencia
+Pago;16/09/2026;20286;16-9-26 PAGO A CUENTA CONDISEÑO;23.1.06 ARCHIVO egreso cajas (sin cuenta contable);$ 2.948.804,57;;Pago sin recibo identificado en el PDF
+Pago;;;Recibo del PDF sin pago en flows;X:0010-00320875 Recibo de Venta;$ 0,00;X:0010-00320875;Recibo sin pago identificado en flows
+Factura;28/01/2026;A:0011-00005637;;Factura de Ventas;$ 4.715.010,00;15116;Coincidencia
+Factura;04/02/2026;A:0013-00031053;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;06/02/2026;A:0013-00031100;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;11/02/2026;A:0013-00031183;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;18/02/2026;A:0013-00031263;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;24/02/2026;A:0013-00031361;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;25/02/2026;A:0013-00031383;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;27/02/2026;A:0013-00031438;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;03/03/2026;A:0013-00031520;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;09/03/2026;A:0013-00031620;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;10/03/2026;A:0013-00031650;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;13/03/2026;A:0013-00031732;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;13/03/2026;A:0013-00031733;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;17/03/2026;A:0013-00031755;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;19/03/2026;A:0013-00031802;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;26/03/2026;A:0013-00031901;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;01/04/2026;A:0013-00031989;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;08/04/2026;A:0013-00032028;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;27/05/2026;A:0013-00032645;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;16/06/2026;A:0013-00032885;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;17/06/2026;A:0013-00032892;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;24/06/2026;A:0013-00032981;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;03/07/2026;A:0013-00033119;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;10/07/2026;A:0013-00033177;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;13/07/2026;A:0013-00033198;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;15/07/2026;A:0013-00033241;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;16/07/2026;A:0013-00033274;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;17/07/2026;A:0013-00033283;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;20/07/2026;A:0013-00033304;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;21/07/2026;A:0013-00033313;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;22/07/2026;A:0013-00033335;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;22/07/2026;A:0013-00033346;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;23/07/2026;A:0013-00033364;;Factura de Ventas;$ 4.062.103,84;18506;Diferencia de importe tolerada
+Factura;11/08/2026;A:0011-00005951;;Factura de Ventas;$ 0,00;;Factura sin carga identificada en el sistema
+Factura;07/09/2026;A:0011-00006012;;Factura de Ventas;$ 162.540,00;20632;Diferencia de fecha en ventana
+Factura;08/09/2026;A:0011-00006017;;Factura de Ventas;$ 483.750,00;20633;Coincidencia
+Factura;09/09/2026;A:0011-00006018;;Factura de Ventas;$ 4.461.172,50;20634;Coincidencia
+Factura;28/09/2026;A:0013-00034237;;Factura de Ventas;$ 1.507.744,00;20635;Coincidencia

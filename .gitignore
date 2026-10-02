@@ -5,6 +5,11 @@
 !docs/*.sql
 *.xlsx
 !reporte_ultimas_asignaciones.xlsx
+# CSVs de conciliacion de proveedores que acompanan los reportes publicados
+!conciliacion_policor_pdf.csv
+!pagos_vs_facturas_policor.csv
+!conciliacion_condiseno.csv
+!fifo_por_empresa.csv
 
 # Salidas antiguas o duplicadas
 consolidado_proveedores/

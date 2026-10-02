@@ -1,0 +1,19 @@
+﻿Tipo;Vto estado;Comprobante estado;Importe estado;ID sistema;Fecha sistema;Importe sistema;Resultado
+Pago;2026-04-21;X:0010-00321132;$3.000.000,00;17152;;;Importe exacto (31 días)
+Pago;2026-06-08;X:0010-00322340;$1.500.000,00;19126;;;Importe exacto (3 días)
+Pago;2026-08-20;X:0010-00323798;$4.000.000,00;19405;;;Importe exacto (0 días)
+Pago;2026-09-17;X:0010-00324300 + X:0010-00324301;$2.948.804,57;20286;;;Suma de 2 recibos (1 días)
+Pago;2026-07-03;X:0010-00322913;$500.000,00;20726;;;Importe exacto (0 días)
+Factura;;A:0013-00032601;;17151;2026-05-22;$771.538,18;Diferencia $0,01
+Factura;;A:0000-00000403;;20725;2026-07-03;$500.000,00;Importe exacto
+Factura;;A:0013-00033799;;19613;2026-08-25;$72.977,21;Importe exacto
+Factura;;A:0013-00033842;;19614;2026-08-27;$96.599,14;Diferencia -$0,86
+Factura;;A:0013-00033840;;19615;2026-08-27;$1.184.220,33;Diferencia $0,33
+Factura;14/04/2026;A:0013-00032096;$760.298,71;;;;Sin cargo identificado en el sistema
+Factura;16/04/2026;A:0013-00032132;$760.298,71;;;;Sin cargo identificado en el sistema
+Factura;06/05/2026;A:0013-00032370;$47.208,00;;;;Sin cargo identificado en el sistema
+Factura;27/05/2026;A:0017-00002449;$660.656,41;;;;Sin cargo identificado en el sistema
+Factura;24/06/2026;A:0013-00032991;$926.149,13;;;;Sin cargo identificado en el sistema
+Factura;29/07/2026;A:0013-00033437;$1.250.297,00;;;;Sin cargo identificado en el sistema
+Factura;19/08/2026;A:0013-00033708;$993.953,00;;;;Sin cargo identificado en el sistema
+Factura;21/09/2026;A:0013-00034152;$1.246.222,06;;;;Sin cargo identificado en el sistema

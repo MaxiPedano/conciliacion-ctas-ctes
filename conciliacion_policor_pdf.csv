@@ -1,0 +1,49 @@
+﻿Vto PDF;Comprobante PDF;Tipo PDF;Debe PDF;Haber PDF;Saldo PDF;ID sistema;Fecha sistema;Referencia sistema;Cargo sistema;Pago sistema;Resultado;Observación
+28/01/2026;A:0011-00005637;Factura de Ventas;$ 4.715.010,00;$ 0,00;$ 678.758,68;15116;28/01/2026;FA 5637 Compra Primera P, Cortes asiento y respaldo;$ 4.715.010,00;$ 0,00;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+28/01/2026;X:0010-00319323;Recibo de Venta;$ 0,00;$ 2.179.536,00;$ -1.500.777,32;15114;28/01/2026;Pago con e-check (Montani Hnos S.A);$ 0,00;$ 2.179.536,00;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+04/02/2026;A:0013-00031053;Factura de Ventas;$ 618.340,00;$ 0,00;$ -882.437,32;;;;;;Sin coincidencia identificada;
+06/02/2026;A:0013-00031100;Factura de Ventas;$ 168.480,00;$ 0,00;$ -713.957,32;;;;;;Sin coincidencia identificada;
+11/02/2026;A:0013-00031183;Factura de Ventas;$ 48.600,00;$ 0,00;$ -665.357,32;;;;;;Sin coincidencia identificada;
+18/02/2026;A:0013-00031263;Factura de Ventas;$ 66.420,00;$ 0,00;$ -598.937,32;;;;;;Sin coincidencia identificada;
+24/02/2026;A:0013-00031361;Factura de Ventas;$ 49.000,00;$ 0,00;$ -549.937,32;;;;;;Sin coincidencia identificada;
+25/02/2026;A:0013-00031383;Factura de Ventas;$ 501.051,00;$ 0,00;$ -48.886,32;;;;;;Sin coincidencia identificada;
+27/02/2026;A:0013-00031438;Factura de Ventas;$ 333.963,00;$ 0,00;$ 285.076,68;;;;;;Sin coincidencia identificada;
+03/03/2026;A:0013-00031520;Factura de Ventas;$ 70.794,00;$ 0,00;$ 355.870,68;;;;;;Sin coincidencia identificada;
+09/03/2026;A:0013-00031620;Factura de Ventas;$ 61.560,00;$ 0,00;$ 417.430,68;;;;;;Sin coincidencia identificada;
+09/03/2026;X:0010-00320139;Recibo de Venta;$ 0,00;$ 8.000.000,00;$ -7.582.569,32;18734;09/03/2026;9-3 Pago a cuenta Policor E cheq Avanzia;$ 0,00;$ 8.000.000,00;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+10/03/2026;A:0013-00031650;Factura de Ventas;$ 172.370,00;$ 0,00;$ -7.410.199,32;;;;;;Sin coincidencia identificada;
+13/03/2026;A:0013-00031732;Factura de Ventas;$ 172.370,00;$ 0,00;$ -7.237.829,32;;;;;;Sin coincidencia identificada;
+13/03/2026;A:0013-00031733;Factura de Ventas;$ 103.600,00;$ 0,00;$ -7.134.229,32;;;;;;Sin coincidencia identificada;
+17/03/2026;A:0013-00031755;Factura de Ventas;$ 1.190.442,00;$ 0,00;$ -5.943.787,32;;;;;;Sin coincidencia identificada;
+19/03/2026;A:0013-00031802;Factura de Ventas;$ 211.562,00;$ 0,00;$ -5.732.225,32;;;;;;Sin coincidencia identificada;
+26/03/2026;A:0013-00031901;Factura de Ventas;$ 93.800,00;$ 0,00;$ -5.638.425,32;;;;;;Sin coincidencia identificada;
+01/04/2026;A:0013-00031989;Factura de Ventas;$ 235.520,00;$ 0,00;$ -5.402.905,32;;;;;;Sin coincidencia identificada;
+08/04/2026;A:0013-00032028;Factura de Ventas;$ 5.452.533,00;$ 0,00;$ 49.627,68;;;;;;Sin coincidencia identificada;
+10/04/2026;X:0010-00320874;Recibo de Venta;$ 0,00;$ 49.626,68;$ 1,00;20429;10/04/2026;10-4-26 PAGO POLICOR AVANZIA;$ 0,00;$ 49.626,68;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+10/04/2026;X:0010-00320875;Recibo de Venta;$ 0,00;$ 1,00;$ 0,00;;;;;;Sin coincidencia identificada;
+27/05/2026;A:0013-00032645;Factura de Ventas;$ 2.103.345,00;$ 0,00;$ 2.103.345,00;;;;;;Sin coincidencia identificada;
+27/05/2026;A:0017-00000047;Nota de Crédito de Venta;$ 0,00;$ 652.570,00;$ 1.450.775,00;;;;;;Sin coincidencia identificada;
+05/06/2026;X:0010-00322299;Recibo de Venta;$ 0,00;$ 3.000.000,00;$ -1.549.225,00;17530;05/06/2026;Pago saldo;$ 0,00;$ 3.000.000,00;Coincidencia;"Desempate entre 2 candidatos: 17530, 17152; orden Avanzia > Sin empresa > Condiseño, luego menor delta, fecha e ID. Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+16/06/2026;A:0013-00032885;Factura de Ventas;$ 98.766,56;$ 0,00;$ -1.450.458,44;;;;;;Sin coincidencia identificada;
+17/06/2026;A:0011-00000544;Nota de Crédito de Venta;$ 0,00;$ 1.124.235,00;$ -2.574.693,44;;;;;;Sin coincidencia identificada;
+17/06/2026;A:0013-00032892;Factura de Ventas;$ 4.594.581,54;$ 0,00;$ 2.019.888,10;;;;;;Sin coincidencia identificada;
+24/06/2026;A:0013-00032981;Factura de Ventas;$ 98.781,57;$ 0,00;$ 2.118.669,67;;;;;;Sin coincidencia identificada;
+03/07/2026;A:0013-00033119;Factura de Ventas;$ 55.299,00;$ 0,00;$ 2.173.968,67;;;;;;Sin coincidencia identificada;
+03/07/2026;X:0010-00322914;Recibo de Venta;$ 0,00;$ 2.383.442,24;$ -209.473,57;18517;03/07/2026;03-7 A CUENTA POLICOR AVANZIA;$ 0,00;$ 2.383.442,24;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+08/07/2026;X:0010-00322991;Recibo de Venta;$ 0,00;$ 13.039.600,83;$ -13.249.074,40;18303;08/07/2026;08-07 Pago a Cta Policor;$ 0,00;$ 13.039.600,83;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+10/07/2026;A:0013-00033177;Factura de Ventas;$ 163.923,29;$ 0,00;$ -13.085.151,11;;;;;;Sin coincidencia identificada;
+13/07/2026;A:0013-00033198;Factura de Ventas;$ 152.073,41;$ 0,00;$ -12.933.077,70;;;;;;Sin coincidencia identificada;
+15/07/2026;A:0013-00033241;Factura de Ventas;$ 194.194,05;$ 0,00;$ -12.738.883,65;;;;;;Sin coincidencia identificada;
+16/07/2026;A:0013-00033274;Factura de Ventas;$ 242.937,77;$ 0,00;$ -12.495.945,88;;;;;;Sin coincidencia identificada;
+17/07/2026;A:0013-00033283;Factura de Ventas;$ 140.200,00;$ 0,00;$ -12.355.745,88;;;;;;Sin coincidencia identificada;
+20/07/2026;A:0013-00033304;Factura de Ventas;$ 229.090,00;$ 0,00;$ -12.126.655,88;;;;;;Sin coincidencia identificada;
+21/07/2026;A:0013-00033313;Factura de Ventas;$ 165.091,00;$ 0,00;$ -11.961.564,88;;;;;;Sin coincidencia identificada;
+22/07/2026;A:0013-00033335;Factura de Ventas;$ 195.522,95;$ 0,00;$ -11.766.041,93;;;;;;Sin coincidencia identificada;
+22/07/2026;A:0013-00033346;Factura de Ventas;$ 148.123,00;$ 0,00;$ -11.617.918,93;;;;;;Sin coincidencia identificada;
+23/07/2026;A:0013-00033364;Factura de Ventas;$ 4.062.103,82;$ 0,00;$ -7.555.815,11;18506;23/07/2026;23-7 FACT13-33364 AVANZIA;$ 4.062.103,84;$ 0,00;Diferencia de importe tolerada;"Diferencia sistema − PDF: $ 0,02 (tolerada hasta $ 0,02). Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+11/08/2026;A:0011-00005951;Factura de Ventas;$ 5.786.849,38;$ 0,00;$ -1.768.965,73;;;;;;Sin coincidencia identificada;
+20/08/2026;X:0010-00323797;Recibo de Venta;$ 0,00;$ 4.000.000,00;$ -5.768.965,73;19407;20/08/2026;20-8-26 PAGO A CUENTA AVANZIA;$ 0,00;$ 4.000.000,00;Coincidencia;"Desempate entre 2 candidatos: 19407, 19405; orden Avanzia > Sin empresa > Condiseño, luego menor delta, fecha e ID. Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+07/09/2026;A:0011-00006012;Factura de Ventas;$ 162.540,00;$ 0,00;$ -5.606.425,73;20632;28/09/2026;28-9-26 FA 6012 AVANZIA;$ 162.540,00;$ 0,00;Diferencia de fecha en ventana;"Fecha sistema 28/09/2026 vs Vto PDF 07/09/2026: 21 días (ventana ±30). Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+08/09/2026;A:0011-00006017;Factura de Ventas;$ 483.750,00;$ 0,00;$ -5.122.675,73;20633;08/09/2026;8-9-26 FA 6017 AVANZIA;$ 483.750,00;$ 0,00;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+09/09/2026;A:0011-00006018;Factura de Ventas;$ 4.461.172,50;$ 0,00;$ -661.503,23;20634;09/09/2026;9-9-26 FA 6018 AVANZIA;$ 4.461.172,50;$ 0,00;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."
+28/09/2026;A:0013-00034237;Factura de Ventas;$ 1.507.744,00;$ 0,00;$ 846.240,77;20635;28/09/2026;28-9-26 FA 34237 AVANZIA;$ 1.507.744,00;$ 0,00;Coincidencia;"Factura/NC por número normalizado e importe; recibo por fecha/ventana e importe."

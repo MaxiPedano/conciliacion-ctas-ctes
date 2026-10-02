@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Análisis de proveedores</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f8;color:#263238;font:15px/1.5 'Segoe UI',sans-serif}main{max-width:1500px;margin:auto;padding:24px}header{background:linear-gradient(120deg,#39265e,#72509a);color:white;padding:28px;border-radius:12px;margin-bottom:22px}h1{margin:0 0 20px;font-size:30px}h2{color:#39265e;margin:0 0 15px;font-size:21px}.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px}label{display:flex;flex-direction:column;gap:6px;font-weight:600}input,select{width:100%;min-height:42px;padding:8px;border:1px solid #d6c9e1;border-radius:6px;font:inherit;background:white;color:#263238}section{background:white;border-radius:12px;padding:24px;margin-bottom:22px;box-shadow:0 2px 9px #39265e14}.wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:12px;border-bottom:1px solid #dce4e8;text-align:left;vertical-align:top}th{background:#72509a;color:white}thead th{position:sticky;top:0}tbody tr:nth-child(even){background:#faf8fc}.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.balance{background:#eee8f5!important;font-weight:700}.amount{border:0;background:none;color:#543779;font:inherit;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:2px}.amount:hover{color:#117d87}.amount:focus-visible,button:focus-visible{outline:3px solid #117d87;outline-offset:3px}.note,footer{color:#65727e;font-size:13px}.total{font-size:20px;font-weight:700;color:#287a62;margin:20px 0 8px}.scroll{max-height:650px}.badge{display:inline-block;background:#ece7f3;padding:3px 8px;border-radius:14px;white-space:nowrap;font-size:12px}.opening{background:#fff5e5!important}dialog{width:min(1250px,95vw);max-height:90vh;border:0;border-radius:12px;padding:24px;box-shadow:0 20px 80px #17253255}dialog::backdrop{background:#17253299}.dialog-head{display:flex;justify-content:space-between;gap:16px}.close{border:1px solid #cbbbd5;border-radius:6px;background:white;cursor:pointer;padding:8px 15px;font:inherit;align-self:start}.error{color:#a32828;background:#fff0f0;padding:12px;border-radius:6px}tfoot td{font-weight:bold;background:#eee8f5}small{font-weight:normal}footer{padding:4px 0 20px}#ledger-title{margin-bottom:4px}@media(max-width:650px){main{padding:10px}header,section{padding:16px}.filters{grid-template-columns:1fr}h1{font-size:25px}th,td{padding:9px}dialog{padding:16px}}
+</style>
+</head>
+<body><main>
+<header><h1>Análisis de proveedores</h1><div class="filters">
+<label>Proveedor<select id="provider"></select></label>
+<label>Fecha desde<input type="date" id="from"></label>
+<label>Fecha hasta<input type="date" id="to"></label>
+</div></header>
+<p id="error" class="error" role="alert" hidden></p>
+<div id="report">
+<section><h2 id="summary-title"></h2><div class="wrap"><table id="summary"><thead><tr><th>Concepto</th><th class="num">Avanzia</th><th class="num">Condiseño</th><th class="num">Sin empresa identificada en la referencia</th></tr></thead><tbody></tbody></table></div>
+<p id="total" class="total"></p><p class="note">Hacé clic en cualquier importe para consultar los movimientos que lo componen. Los saldos negativos de cuenta corriente son a nuestro favor; los positivos son a pagar.</p>
+<p class="note">Clasificación preliminar por referencia: Avanzia, Condiseño (incluye GConDis) o Sin empresa. Las referencias ambiguas quedan sin empresa. No se asignan automáticamente los movimientos históricos.</p>
+<p class="note"><strong>Movimientos incluidos:</strong> Comprobantes Proveedores con estado 12.0.06 FACTURA DE COMPRA (ID 1368) y flujo CAJA: Egresos (ID 10150). El filtro se aplica al estado real, no al texto de la referencia: una referencia que dice “Remito” puede estar registrada en FACTURA DE COMPRA.</p>
+<p id="scope" class="note"></p></section>
+<section><h2 id="ledger-title">Cuenta corriente</h2><p id="ledger-note" class="note"></p><div class="wrap scroll"><table id="ledger"><thead><tr><th>Fecha</th><th>Comprobante / ID</th><th>Referencia / Estado real</th><th>Empresa</th><th class="num">Cargos netos</th><th class="num">Pagos netos</th><th class="num">Saldo acumulado</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div></section>
+</div>
+<footer id="source"></footer>
+<dialog id="detail" aria-labelledby="detail-title"><div class="dialog-head"><h2 id="detail-title"></h2><button class="close" type="button" id="close">Cerrar</button></div><p id="detail-note" class="note"></p><div class="wrap scroll"><table id="composition"><thead><tr><th>Fecha</th><th>Comprobante / ID</th><th>Referencia / Tipo</th><th>Empresa</th><th class="num">Cargos netos</th><th class="num">Pagos netos</th><th class="num">Saldo acumulado</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div></dialog>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+'use strict';
+const DATA=JSON.parse(document.getElementById('data').textContent);
+const companies=['Avanzia','Condiseño','Sin empresa'];
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:2}).format(n/100);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const date=s=>s?s.split('-').reverse().join('/'):'—';
+const sum=(rows,key)=>rows.reduce((n,r)=>n+r[key],0);
+const balance=rows=>sum(rows,'charges')-sum(rows,'payments');
+let selected=[],before=[],period=[],through=[];
+const providers=[...new Map(DATA.rows.map(r=>[r.provider,r.name])).entries()].sort((a,b)=>a[1].localeCompare(b[1],'es'));
+for(const [id,name] of providers){const o=document.createElement('option');o.value=id;o.textContent=name;$('provider').append(o);}
+$('provider').value=(providers.find(p=>p[1].toUpperCase()==='POLICOR')||providers[0])[0];
+$('source').textContent=`Fuente: ${DATA.source}. Consultado: ${DATA.generated || 'fecha no informada'}.`;
+function button(value,company,kind){return `<button class="amount" data-company="${esc(company)}" data-kind="${kind}" aria-label="Ver composición: ${esc(company)}, ${kind}">${money(value)}</button>`;}
+function row(r,running){return `<tr data-id="${esc(r.id)}" data-statusid="${r.statusid}" data-flowid="${r.flowid}"><td>${date(r.date)}</td><td>${esc(r.id)}</td><td>${esc(r.reference)}<br><small>${esc(r.flow)}</small><br><small><strong>Estado:</strong> ${esc(r.status)} (ID ${r.statusid})</small></td><td><span class="badge">${esc(r.company)}</span></td><td class="num">${money(r.charges)}</td><td class="num">${money(r.payments)}</td><td class="num">${money(running)}</td></tr>`;}
+function foot(table,rows,closing,label){table.querySelector('tfoot').innerHTML=`<tr><td colspan="4">${esc(label)}</td><td class="num">${money(sum(rows,'charges'))}</td><td class="num">${money(sum(rows,'payments'))}</td><td class="num">${money(closing)}</td></tr>`;}
+function render(){
+ const start=$('from').value,end=$('to').value;
+ const invalid=!!(start&&end&&start>end);
+ $('error').hidden=!invalid;$('report').hidden=invalid;
+ $('error').textContent=invalid?'La fecha desde no puede ser posterior a la fecha hasta.':'';
+ if(invalid)return;
+ selected=DATA.rows.filter(r=>r.provider===$('provider').value);
+ through=selected.filter(r=>!end||r.date<=end);
+ before=through.filter(r=>start&&r.date<start);
+ period=through.filter(r=>!start||r.date>=start);
+ const name=$('provider').selectedOptions[0].textContent;
+ $('summary-title').textContent=name+' · Resumen por empresa';
+ const defs=[];
+ if(start)defs.push(['Saldo anterior (negativo: a favor)','opening']);
+ defs.push(['Comprobantes netos de notas de crédito y ajustes','charges'],['Pagos y egresos netos','payments']);
+ const allFavor=companies.every(c=>balance(through.filter(r=>r.company===c))<=0);
+ defs.push([allFavor?'Saldo a nuestro favor':'Saldo al cierre (negativo: a favor)','balance']);
+ $('summary').querySelector('tbody').innerHTML=defs.map(([label,kind])=>`<tr class="${kind==='balance'?'balance':''}"><td>${label}</td>${companies.map(c=>{
+ const p=period.filter(r=>r.company===c),b=before.filter(r=>r.company===c),t=through.filter(r=>r.company===c);
+ let v=kind==='opening'?balance(b):kind==='balance'?balance(t):sum(p,kind);
+ if(kind==='balance'&&allFavor)v=-v;
+ return `<td class="num">${button(v,c,kind)}</td>`;
+ }).join('')}</tr>`).join('');
+ const total=balance(through);
+ $('total').textContent=`Saldo total ${total<=0?'a nuestro favor':'a pagar'}: ${money(Math.abs(total))}`;
+ $('scope').textContent=`${start?'Desde '+date(start):'Desde el inicio del historial'} · ${end?'Hasta '+date(end):'Hasta el último movimiento disponible'}. ${start?'Saldo al cierre = saldo anterior + cargos netos del período − pagos netos del período.':'Cargos y pagos corresponden a todo el historial hasta el corte.'}`;
+ $('ledger-title').textContent='Cuenta corriente · '+name;
+ $('ledger-note').textContent=`${period.length} movimientos en el período. Saldo acumulado = cargos netos − pagos netos, incluido el saldo anterior.`;
+ let running=balance(before),html='';
+ if(start)html=`<tr class="opening"><td colspan="6">${button(running,'Todas','opening')} · Saldo anterior al ${date(start)} — ver movimientos anteriores</td><td class="num">${money(running)}</td></tr>`;
+ html+=period.map(r=>{running+=r.charges-r.payments;return row(r,running);}).join('');
+ if(!period.length)html+='<tr><td colspan="7">Sin movimientos en el período seleccionado.</td></tr>';
+ $('ledger').querySelector('tbody').innerHTML=html;
+ foot($('ledger'),period,total,'Totales del período / saldo al cierre');
+}
+function openDetail(company,kind){
+ let rows=kind==='opening'?before:kind==='balance'?through:period;
+ rows=rows.filter(r=>company==='Todas'||r.company===company);
+ if(kind==='charges'||kind==='payments')rows=rows.filter(r=>r[kind]!==0);
+ const titles={opening:'Saldo anterior',balance:'Saldo al cierre',charges:'Comprobantes netos de notas de crédito y ajustes',payments:'Pagos y egresos netos'};
+ $('detail-title').textContent=`${$('provider').selectedOptions[0].textContent} · ${company} · ${titles[kind]}`;
+ const value=kind==='charges'||kind==='payments'?sum(rows,kind):balance(rows);
+ $('detail-note').textContent=`${rows.length} movimientos · Importe: ${money(value)}${kind==='balance'||kind==='opening'?(value<0?' (a nuestro favor)':value>0?' (a pagar)':' (saldado)'):''}. ${kind==='balance'?'Incluye el historial anterior a la fecha desde para explicar el saldo completo.':''}`;
+ let running=0;
+ $('composition').querySelector('tbody').innerHTML=rows.map(r=>{running+=r.charges-r.payments;return row(r,running);}).join('')||'<tr><td colspan="7">Sin movimientos para este concepto.</td></tr>';
+ foot($('composition'),rows,balance(rows),'Total de los movimientos');
+ $('detail').showModal();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-kind]');if(b)openDetail(b.dataset.company,b.dataset.kind);});
+$('close').onclick=()=>$('detail').close();
+for(const id of ['provider','from','to'])$(id).addEventListener('change',render);
+render();
+</script></main></body></html>
