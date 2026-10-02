@@ -204,9 +204,9 @@ def write_html(av_pagos, av_facturas, co_pagos, co_facturas, av_falt, co_falt):
 
     content = f'''<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FIFO por empresa — pagos vs facturas</title>
 <style>body{{font:15px/1.5 'Segoe UI',sans-serif;background:#f3f6f8;color:#263238;margin:0}}main{{max-width:1500px;margin:auto;padding:24px}}header,section{{background:white;padding:24px;border-radius:12px;margin-bottom:18px}}header{{background:#39265e;color:white}}h1,h2,h3{{margin-top:0}}.wrap{{overflow:auto}}table{{border-collapse:collapse;width:100%;font-size:14px}}td,th{{padding:8px;border-bottom:1px solid #dce4e8;text-align:left;vertical-align:top}}th{{background:#72509a;color:white}}tr:nth-child(even){{background:#faf8fc}}.cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0}}.card{{background:#eee8f5;border-radius:10px;padding:14px}}.card b{{font-size:17px}}.note{{background:#fff5e5;padding:12px}}a{{color:#72509a}}@media(max-width:600px){{main{{padding:10px}}section,header{{padding:15px}}}}</style></head><body><main>
-<header><h1>FIFO por empresa — pagos vs facturas del proveedor</h1>
+<header><h1>POLICOR — FIFO por empresa</h1>
 <p>Cada pago cubre las facturas más viejas pendientes de su empresa. Sin saldo inicial y sin cruces entre empresas. Origen: estados POLICOR de Avanzia y Condiseño vs sistema flows. Solo lectura.</p>
-<p><a href="fifo_por_empresa.csv">Descargar CSV</a> · <a href="index.html">Inicio</a></p></header>
+<p><a href="fifo_por_empresa.csv">Descargar CSV</a> · <a href="conciliacion_proveedores.html">Volver a proveedores</a> · <a href="index.html">Inicio</a></p></header>
 {bloque('Avanzia', '01/01/2026–01/10/2026', av_pagos, av_facturas, av_falt,
         'Reglas: facturas por Vto, pagos por fecha del recibo. Tolerancia $0,02 en matches. Las facturas marcadas "Sí" ya están cargadas en flows; las "No" son las que faltan cargar.')}
 {bloque('Condiseño', '01/01/2026–30/09/2026', co_pagos, co_facturas, co_falt,
