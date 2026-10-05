@@ -33,12 +33,18 @@
     function downloadTable(table, includeAll) {
         const sourceId = includeAll ? table.dataset.excelAllSource : "";
         const source = sourceId ? document.getElementById(sourceId) || table : table;
-        const clone = source.cloneNode(true);
-        removeRowsFromClone(clone, includeAll);
+        let tableHtml;
+        if (typeof table.excelDataProvider === "function") {
+            tableHtml = table.excelDataProvider(includeAll);
+        } else {
+            const clone = source.cloneNode(true);
+            removeRowsFromClone(clone, includeAll);
+            tableHtml = clone.outerHTML;
+        }
 
         const workbook = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
             + '<style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:5px}th{font-weight:bold;background:#dbeaf0}</style>'
-            + '</head><body>' + clone.outerHTML + '</body></html>';
+            + '</head><body>' + tableHtml + '</body></html>';
         const blob = new Blob(["\ufeff", workbook], { type: "application/vnd.ms-excel;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -54,7 +60,7 @@
     let sourceSequence = 0;
 
     function ensureAllSource(table) {
-        if (table.dataset.excelAllSource) return;
+        if (table.dataset.excelAllSource || typeof table.excelDataProvider === "function") return;
         sourceSequence += 1;
         const source = table.cloneNode(true);
         const sourceId = "excel-all-source-" + sourceSequence;
@@ -80,6 +86,7 @@
             + '<button type="button" class="excel-button">Excel visibles</button>'
             + '<button type="button" class="excel-button excel-button-secondary">Excel todo</button>';
         const buttons = toolbar.querySelectorAll("button");
+        if (typeof table.excelDataProvider === "function") buttons[0].textContent = "Excel filtrado";
         buttons[0].addEventListener("click", function () { downloadTable(table, false); });
         buttons[1].addEventListener("click", function () { downloadTable(table, true); });
         const wrapper = table.closest(".table-wrap");
