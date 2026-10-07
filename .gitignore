@@ -10,6 +10,7 @@
 !pagos_vs_facturas_policor.csv
 !conciliacion_condiseno.csv
 !fifo_por_empresa.csv
+!fifo_am_adhesivos.csv
 
 # Salidas antiguas o duplicadas
 consolidado_proveedores/
