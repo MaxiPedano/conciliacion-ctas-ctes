@@ -11,6 +11,12 @@ from reporte_fifo_por_empresa import fifo, money, dmy
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'docs' / 'am_adhesivos_flows.json'
+# Egresos sin cuenta corriente: pagan facturas que no tienen cargo en 10303 y
+# por eso no forman parte de la cuenta corriente (10303 + 10150).
+TRANSFERS_FLOW = 11332  # CAJA: Egresos sin cta cte
+# El pago 13840 cargó la suma íntegra de FA 7904 + FA 8086 ($1.067.220,00);
+# el proveedor aplicó $1.067.200,00 y dejó $20,00 pendientes en 8086.
+EXPLICIT_PAYMENT_IDS = {'00004079': '13840'}
 # Transcripción del estado adjunto, emitido 06/10/2026 para AVANZIA S.A.S.
 # Fecha, tipo, número, centavos, saldo acumulado del documento.
 STATEMENT = [
@@ -40,7 +46,7 @@ STATEMENT = [
 def load_source(live=False):
     if live:
         from reporte_analisis_proveedores import fetch_data
-        data = fetch_data()
+        data = fetch_data(extra_flows=(TRANSFERS_FLOW,))
         data['rows'] = [r for r in data['rows'] if r['provider'] in ('698', '393')
                         and '2025-01-01' <= r['date'] <= '2026-10-06']
         SOURCE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -78,9 +84,15 @@ def build(data):
             f['delta'] = delta
     used = set()
     for p in payments:
-        candidates = [r for r in data['rows'] if r['payments'] > 0 and r['id'] not in used
-                      and abs(r['payments'] - p['importe']) <= 200
-                      and abs((date.fromisoformat(r['date']) - date.fromisoformat(p['fecha'])).days) <= 30]
+        forced = EXPLICIT_PAYMENT_IDS.get(p['num'])
+        if forced:
+            candidates = [r for r in data['rows'] if r['id'] == forced and r['payments'] > 0
+                          and r['id'] not in used
+                          and abs((date.fromisoformat(r['date']) - date.fromisoformat(p['fecha'])).days) <= 30]
+        else:
+            candidates = [r for r in data['rows'] if r['payments'] > 0 and r['id'] not in used
+                          and abs(r['payments'] - p['importe']) <= 200
+                          and abs((date.fromisoformat(r['date']) - date.fromisoformat(p['fecha'])).days) <= 30]
         if len(candidates) == 1:
             p['local'] = candidates[0]
             p['idsys'] = candidates[0]['id']
@@ -96,7 +108,13 @@ def build(data):
 def situation(row):
     r = row['local']
     if not r:
-        return 'Sin registro identificado en flows'
+        covering = [p for p, _ in row.get('por') or []]
+        if covering and all(p['idsys'] for p in covering):
+            nums = ', '.join(dict.fromkeys(p['num'] for p in covering))
+            ids = ', '.join(dict.fromkeys('ID ' + p['idsys'] for p in covering))
+            return (f'Sin cargo en flows · Cancelada por recibo {nums} del estado, '
+                    f'verificado en flows ({ids})')
+        return 'Sin registro identificado en flows · Impaga: integra el saldo a pagar'
     text = f"ID {r['id']} · perfil {r['provider']} · {r['name']} · {dmy(r['date'])}"
     if row['tipo'] == 'Factura':
         if row.get('group', 1) > 1:
@@ -108,6 +126,8 @@ def situation(row):
         text += ' · Pago flows ' + money(r['payments'])
         if delta:
             text += ' · Diferencia flows − proveedor: ' + money(delta)
+        if r.get('flowid') == TRANSFERS_FLOW:
+            text += ' · Flujo 11332 — Egresos sin cta cte: fuera de la cuenta corriente'
     if row['fecha'] != r['date']:
         text += ' · Fecha distinta del estado'
     return text
@@ -125,7 +145,16 @@ def render(data, payments, invoices):
     invoice_rows = [[dmy(f['fecha']), f['num'], money(f['importe']),
                      '; '.join(p['num'] + ': ' + money(t) for p, t in f['por']),
                      money(f['importe'] - f['cubierto']), situation(f)] for f in invoices]
-    missing_rows = [[dmy(f['fecha']), f['num'], money(f['importe'])] for f in missing]
+    missing_rows = [[dmy(f['fecha']), f['num'], money(f['importe']), situation(f)] for f in missing]
+    transfers = [(p, p['local']) for p in payments
+                 if p.get('local') and p['local'].get('flowid') == TRANSFERS_FLOW]
+    transfer_rows = [[dmy(r['date']), r['id'], r['reference'], money(r['payments']),
+                      p['num'], money(p['importe']),
+                      money(r['payments'] - p['importe']) if r['payments'] != p['importe'] else '$0,00',
+                      ', '.join(f['num'].split('-')[-1] for f in p['cubiertas'])]
+                     for p, r in transfers]
+    transfer_total_flows = sum(r['payments'] for _, r in transfers)
+    transfer_total_estado = sum(p['importe'] for p, _ in transfers)
     def table(name, headers, rows):
         return f'<div class="wrap"><table id="{name}"><thead><tr>' + ''.join(
             '<th>' + h(x) + '</th>' for x in headers) + '</tr></thead><tbody>' + ''.join(
@@ -144,14 +173,18 @@ def render(data, payments, invoices):
 <style>*{{box-sizing:border-box}}body{{margin:0;background:#f3f6f8;color:#263238;font:15px/1.5 'Segoe UI',sans-serif}}main{{max-width:1500px;margin:auto;padding:24px}}header,section{{padding:24px;background:white;border-radius:12px;margin-bottom:20px}}header{{border-top:6px solid #61418a}}a{{color:#61418a}}.wrap{{overflow:auto}}table{{width:100%;border-collapse:collapse;font-size:14px}}td,th{{padding:10px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}}th{{background:#61418a;color:white}}.note{{background:#fff5e5;padding:14px}}.cards{{display:flex;flex-wrap:wrap;gap:16px}}.cards p{{background:#eee8f5;padding:16px;border-radius:8px}}@media(max-width:600px){{main{{padding:10px}}section,header{{padding:14px}}}}@media print{{a{{color:inherit}}.wrap{{overflow:visible}}main{{padding:0}}}}</style></head><body><main>
 <header><h1>AM ADHESIVOS — FIFO Avanzia</h1><a href="conciliacion_proveedores.html">← Volver a proveedores</a> · <a href="fifo_am_adhesivos.csv">Descargar CSV</a>
 <p>Estado de cuenta emitido el 06/10/2026 para AVANZIA S.A.S. Período indicado: 01/01/2025–31/10/2026; último movimiento: 03/09/2026. Saldo inicial: $0,00. Fuente: transcripción del PDF adjunto.</p>
-<p>Flows consultado: {h(data['generated'])}. Perfiles 698 — AM ADHESIVOS MONTERO y 393 — HORACIO MONTERO. Facturas: 10303/1368; pagos: 10150 CAJA: Egresos.</p>
-<div class="cards"><p>13 facturas<br><b>$12.950.257,03</b></p><p>7 recibos del proveedor<br><b>$10.940.268,23</b></p><p>Saldo a pagar a AM ADHESIVOS<br><b>$2.009.988,80</b></p><p>{len(missing)} facturas sin carga identificada<br><b>{money(sum(f['importe'] for f in missing))}</b></p></div>
+<p>Flows consultado: {h(data['generated'])}. Perfiles 698 — AM ADHESIVOS MONTERO y 393 — HORACIO MONTERO. Facturas: 10303/1368; pagos de cuenta corriente: 10150 CAJA: Egresos. Verificación adicional: {TRANSFERS_FLOW} CAJA: Egresos sin cta cte, donde están cargados los tres pagos que cancelan facturas sin cargo en 10303. La cuenta corriente (10303 + 10150) cierra en $0,00 en ambos perfiles.</p>
+<div class="cards"><p>13 facturas<br><b>$12.950.257,03</b></p><p>7 recibos del proveedor<br><b>$10.940.268,23</b></p><p>Saldo a pagar a AM ADHESIVOS<br><b>$2.009.988,80</b></p><p>{len(missing)} facturas sin cargo en flows<br><b>{money(sum(f['importe'] for f in missing))}</b></p><p>Cuenta corriente en flows (10303 + 10150)<br><b>$0,00</b></p></div>
 <p>FIFO teórico por fecha del estado: cada recibo cubre las facturas más antiguas. Se usan los importes del proveedor; los registros de flows y sus diferencias se muestran por separado. Una factura cubierta puede seguir faltando en flows.</p></header>
 <section><h2>Recibos → facturas (FIFO)</h2>{table('pagos', ['Fecha estado', 'Recibo', 'Importe proveedor', 'Facturas / importe aplicado', 'Remanente', 'Verificación en flows'], payment_rows)}</section>
 <section><h2>Facturas → cobertura y carga en flows</h2>{table('facturas', ['Fecha estado', 'Factura', 'Importe proveedor', 'Recibos / importe aplicado', 'Pendiente FIFO', 'Verificación en flows'], invoice_rows)}
 <p class="note">El proveedor conserva $20,00 pendientes en la factura 8086. El FIFO estricto aplica los recibos siguientes a esa deuda y traslada los $20,00 hasta la factura 8574. El cierre es idéntico: $20,00 + $1.680.544,80 (8625) + $329.424,00 (8627) = $2.009.988,80.</p></section>
-<section><h2>Facturas a cargar en flows ({len(missing)})</h2><p>Sin registro identificado en los dos perfiles y flujos consultados.</p>{table('faltantes', ['Fecha', 'Factura', 'Importe'], missing_rows)}</section>
-<section><h2>Diferencias a revisar</h2><ul><li>FA 8438: proveedor $1.070.739,28; flows $1.070.737,50. Diferencia: $1,78.</li><li>Recibo 4305: proveedor $2.141.476,78; pago flows $2.141.475,00. Diferencia: $1,78. No se consideran diferencias toleradas de $0,02.</li><li>FA 8265: fecha del estado 03/02/2026; fecha en flows 06/03/2026 (31 días). Vinculada por número e importe.</li><li>FA 8541 y 8574: cargo agrupado ID 18772 y pago ID 18773 en el perfil HORACIO MONTERO. El cargo se cuenta una sola vez.</li></ul><p>Recibos sin pago identificado en flows: {h(', '.join(p['num'] for p in payments if not p['idsys']) or 'Ninguno')}.</p></section>{extra_section}
+<section><h2>Facturas a cargar en flows ({len(missing)})</h2><p>Sin cargo en 10303. Cinco están canceladas por recibos del estado y verificadas en flows; dos siguen impagas e integran el saldo a pagar.</p>{table('faltantes', ['Fecha', 'Factura', 'Importe', 'Estado'], missing_rows)}</section>
+<section><h2>Pagos fuera de cuenta corriente: flujo {TRANSFERS_FLOW} — Egresos sin cta cte</h2>
+<p>Los tres recibos del estado que no aparecen en 10150 están cargados en flows en el flujo {TRANSFERS_FLOW} (egresos sin cuenta corriente). Cancelan facturas que tampoco tienen cargo en 10303, por eso no alteran la cuenta corriente ni se cuentan dos veces.</p>
+{table('transferencias', ['Fecha flows', 'ID', 'Referencia flows', 'Importe flows', 'Recibo estado', 'Importe estado', 'Diferencia flows − estado', 'Facturas del estado'], transfer_rows)}
+<p class="note">Transferencias en flows: {money(transfer_total_flows)}; recibos del estado: {money(transfer_total_estado)}; diferencia: {money(transfer_total_flows - transfer_total_estado)} por el recibo 00004079 (el pago 13840 cargó la suma íntegra de FA 7904 + FA 8086 y el proveedor dejó $20,00 pendientes en 8086). Cierre: el saldo a pagar de $2.009.988,80 es exactamente FA 8625 ($1.680.544,80) + FA 8627 ($329.424,00) + los $20,00 residuales de FA 8086.</p></section>
+<section><h2>Diferencias a revisar</h2><ul><li>FA 8438: proveedor $1.070.739,28; flows $1.070.737,50. Diferencia: $1,78.</li><li>Recibo 4305: proveedor $2.141.476,78; pago flows $2.141.475,00. Diferencia: $1,78. No se consideran diferencias toleradas de $0,02.</li><li>Recibo 00004079: estado $1.067.200,00; pago 13840 (flujo 11332) $1.067.220,00. Diferencia: $20,00 a favor del proveedor en el estado.</li><li>FA 8265: fecha del estado 03/02/2026; fecha en flows 06/03/2026 (31 días). Vinculada por número e importe.</li><li>FA 8541 y 8574: cargo agrupado ID 18772 y pago ID 18773 en el perfil HORACIO MONTERO. El cargo se cuenta una sola vez.</li><li>Pago 00004305: cancelado con e-cheque 21 (Galicia AVANZIA, cobro 30/06/2026), emisión ID 17358 en flujo 11541 ligada al pago ID 17360. No es un movimiento adicional.</li></ul><p>Recibos sin pago identificado en flows: {h(', '.join(p['num'] for p in payments if not p['idsys']) or 'Ninguno')}. Diferencia neta: los recibos del estado suman $18,22 menos que los pagos en flows (−$20,00 del recibo 00004079 + $1,78 del recibo 00004305).</p></section>{extra_section}
 </main></body></html>'''
     (ROOT / 'reporte_fifo_am_adhesivos.html').write_text(content, encoding='utf-8')
     with (ROOT / 'fifo_am_adhesivos.csv').open('w', encoding='utf-8-sig', newline='') as stream:
@@ -161,10 +194,14 @@ def render(data, payments, invoices):
             for row in rows:
                 writer.writerow([label] + row)
         for row in missing_rows:
-            writer.writerow(['A cargar en flows'] + row + ['', '', 'Sin registro identificado'])
+            writer.writerow(['A cargar en flows'] + row[:3] + ['', '', row[3]])
     print(json.dumps(dict(facturas=len(invoices), recibos=len(payments), faltantes=len(missing),
                           importe_faltante=sum(f['importe'] for f in missing),
                           recibos_sin_flows=[p['num'] for p in payments if not p['idsys']],
+                          transferencias_11332={p['num']: r['id'] for p, r in transfers},
+                          dif_transferencias=transfer_total_flows - transfer_total_estado,
+                          ctacte_flows=sum(r['charges'] - r['payments'] for r in data['rows']
+                                           if r['flowid'] in (10303, 10150)),
                           extras=[r['id'] for r in extras], saldo=200998880)))
 
 

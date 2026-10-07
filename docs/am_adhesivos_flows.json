@@ -31,6 +31,51 @@
       "payments": 80295600
     },
     {
+      "id": "11487",
+      "provider": "698",
+      "name": "AM ADHESIVOS MONTERO",
+      "date": "2025-04-29",
+      "reference": "Transferencia Adhesivos Montero",
+      "company": "Sin empresa",
+      "flow": "CAJA: Egresos sin cta cte",
+      "flowid": 11332,
+      "status": "12.0.05 ARCHIVO  egreso cajas (cuenta contable)",
+      "statusid": 1167,
+      "statusflowid": 578,
+      "charges": 0,
+      "payments": 143323290
+    },
+    {
+      "id": "13840",
+      "provider": "698",
+      "name": "AM ADHESIVOS MONTERO",
+      "date": "2025-10-30",
+      "reference": "Transf AM ADHESIVOS FA 8086 / 7904",
+      "company": "Sin empresa",
+      "flow": "CAJA: Egresos sin cta cte",
+      "flowid": 11332,
+      "status": "12.0.05 ARCHIVO  egreso cajas (cuenta contable)",
+      "statusid": 1167,
+      "statusflowid": 578,
+      "charges": 0,
+      "payments": 106722000
+    },
+    {
+      "id": "14748",
+      "provider": "698",
+      "name": "AM ADHESIVOS MONTERO",
+      "date": "2025-12-22",
+      "reference": "Transferencia Compra CANTO NEGRO MATE",
+      "company": "Sin empresa",
+      "flow": "CAJA: Egresos sin cta cte",
+      "flowid": 11332,
+      "status": "12.0.05 ARCHIVO  egreso cajas (cuenta contable)",
+      "statusid": 1167,
+      "statusflowid": 578,
+      "charges": 0,
+      "payments": 105451500
+    },
+    {
       "id": "19697",
       "provider": "698",
       "name": "AM ADHESIVOS MONTERO",
@@ -136,6 +181,6 @@
       "payments": 323572755
     }
   ],
-  "generated": "07/10/2026 11:54 UTC",
+  "generated": "07/10/2026 12:40 UTC",
   "source": "PostgreSQL · consulta directa de solo lectura"
 }

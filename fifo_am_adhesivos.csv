@@ -1,28 +1,28 @@
 ﻿Tabla;Fecha estado;Comprobante;Importe proveedor;Aplicaciones FIFO;Pendiente o remanente;Verificación flows
 Recibo FIFO;22/01/2025;00003769;$802.956,00;A-0004-00007563: $802.956,00;$0,00;ID 10476 · perfil 698 · AM ADHESIVOS MONTERO · 22/01/2025 · Pago flows $802.956,00
-Recibo FIFO;30/04/2025;00003882;$1.433.232,90;"A-0004-00007732: $1.194.360,75; A-0004-00007765: $238.872,15";$0,00;Sin registro identificado en flows
-Recibo FIFO;06/11/2025;00004079;$1.067.200,00;"A-0004-00007904: $511.830,00; A-0004-00008086: $555.370,00";$0,00;Sin registro identificado en flows
-Recibo FIFO;23/12/2025;00004119;$1.054.515,00;"A-0004-00008086: $20,00; A-0004-00008154: $1.054.495,00";$0,00;Sin registro identificado en flows
+Recibo FIFO;30/04/2025;00003882;$1.433.232,90;"A-0004-00007732: $1.194.360,75; A-0004-00007765: $238.872,15";$0,00;ID 11487 · perfil 698 · AM ADHESIVOS MONTERO · 29/04/2025 · Pago flows $1.433.232,90 · Flujo 11332 — Egresos sin cta cte: fuera de la cuenta corriente · Fecha distinta del estado
+Recibo FIFO;06/11/2025;00004079;$1.067.200,00;"A-0004-00007904: $511.830,00; A-0004-00008086: $555.370,00";$0,00;ID 13840 · perfil 698 · AM ADHESIVOS MONTERO · 30/10/2025 · Pago flows $1.067.220,00 · Diferencia flows − proveedor: $20,00 · Flujo 11332 — Egresos sin cta cte: fuera de la cuenta corriente · Fecha distinta del estado
+Recibo FIFO;23/12/2025;00004119;$1.054.515,00;"A-0004-00008086: $20,00; A-0004-00008154: $1.054.495,00";$0,00;ID 14748 · perfil 698 · AM ADHESIVOS MONTERO · 22/12/2025 · Pago flows $1.054.515,00 · Flujo 11332 — Egresos sin cta cte: fuera de la cuenta corriente · Fecha distinta del estado
 Recibo FIFO;06/03/2026;00004213;$1.205.160,00;"A-0004-00008154: $20,00; A-0004-00008265: $1.205.140,00";$0,00;ID 19698 · perfil 698 · AM ADHESIVOS MONTERO · 06/03/2026 · Pago flows $1.205.160,00
 Recibo FIFO;15/06/2026;00004305;$2.141.476,78;"A-0004-00008265: $20,00; A-0004-00008438: $1.070.739,28; A-0004-00008466: $1.070.717,50";$0,00;ID 17360 · perfil 698 · AM ADHESIVOS MONTERO · 02/06/2026 · Pago flows $2.141.475,00 · Diferencia flows − proveedor: -$1,78 · Fecha distinta del estado
 Recibo FIFO;11/08/2026;00004332;$3.235.727,55;"A-0004-00008466: $20,00; A-0004-00008541: $1.609.850,55; A-0004-00008574: $1.625.857,00";$0,00;ID 18773 · perfil 393 · HORACIO MONTERO · 04/08/2026 · Pago flows $3.235.727,55 · Fecha distinta del estado
 Factura FIFO;14/01/2025;A-0004-00007563;$802.956,00;00003769: $802.956,00;$0,00;ID 10474 · perfil 698 · AM ADHESIVOS MONTERO · 14/01/2025
-Factura FIFO;10/04/2025;A-0004-00007732;$1.194.360,75;00003882: $1.194.360,75;$0,00;Sin registro identificado en flows
-Factura FIFO;28/04/2025;A-0004-00007765;$238.872,15;00003882: $238.872,15;$0,00;Sin registro identificado en flows
-Factura FIFO;14/07/2025;A-0004-00007904;$511.830,00;00004079: $511.830,00;$0,00;Sin registro identificado en flows
-Factura FIFO;16/10/2025;A-0004-00008086;$555.390,00;"00004079: $555.370,00; 00004119: $20,00";$0,00;Sin registro identificado en flows
-Factura FIFO;25/11/2025;A-0004-00008154;$1.054.515,00;"00004119: $1.054.495,00; 00004213: $20,00";$0,00;Sin registro identificado en flows
+Factura FIFO;10/04/2025;A-0004-00007732;$1.194.360,75;00003882: $1.194.360,75;$0,00;Sin cargo en flows · Cancelada por recibo 00003882 del estado, verificado en flows (ID 11487)
+Factura FIFO;28/04/2025;A-0004-00007765;$238.872,15;00003882: $238.872,15;$0,00;Sin cargo en flows · Cancelada por recibo 00003882 del estado, verificado en flows (ID 11487)
+Factura FIFO;14/07/2025;A-0004-00007904;$511.830,00;00004079: $511.830,00;$0,00;Sin cargo en flows · Cancelada por recibo 00004079 del estado, verificado en flows (ID 13840)
+Factura FIFO;16/10/2025;A-0004-00008086;$555.390,00;"00004079: $555.370,00; 00004119: $20,00";$0,00;Sin cargo en flows · Cancelada por recibo 00004079, 00004119 del estado, verificado en flows (ID 13840, ID 14748)
+Factura FIFO;25/11/2025;A-0004-00008154;$1.054.515,00;"00004119: $1.054.495,00; 00004213: $20,00";$0,00;Sin cargo en flows · Cancelada por recibo 00004119, 00004213 del estado, verificado en flows (ID 14748, ID 19698)
 Factura FIFO;03/02/2026;A-0004-00008265;$1.205.160,00;"00004213: $1.205.140,00; 00004305: $20,00";$0,00;ID 19697 · perfil 698 · AM ADHESIVOS MONTERO · 06/03/2026 · Fecha distinta del estado
 Factura FIFO;08/05/2026;A-0004-00008438;$1.070.739,28;00004305: $1.070.739,28;$0,00;ID 17354 · perfil 698 · AM ADHESIVOS MONTERO · 08/05/2026 · Diferencia flows − proveedor: -$1,78
 Factura FIFO;29/05/2026;A-0004-00008466;$1.070.737,50;"00004305: $1.070.717,50; 00004332: $20,00";$0,00;ID 17353 · perfil 698 · AM ADHESIVOS MONTERO · 29/05/2026
 Factura FIFO;14/07/2026;A-0004-00008541;$1.609.850,55;00004332: $1.609.850,55;$0,00;ID 18772 · perfil 393 · HORACIO MONTERO · 04/08/2026 · Cargo agrupado de 2 facturas: $3.235.727,55 (no sumar dos veces) · Fecha distinta del estado
 Factura FIFO;31/07/2026;A-0004-00008574;$1.625.877,00;00004332: $1.625.857,00;$20,00;ID 18772 · perfil 393 · HORACIO MONTERO · 04/08/2026 · Cargo agrupado de 2 facturas: $3.235.727,55 (no sumar dos veces) · Fecha distinta del estado
-Factura FIFO;03/09/2026;A-0004-00008625;$1.680.544,80;;$1.680.544,80;Sin registro identificado en flows
-Factura FIFO;03/09/2026;A-0004-00008627;$329.424,00;;$329.424,00;Sin registro identificado en flows
-A cargar en flows;10/04/2025;A-0004-00007732;$1.194.360,75;;;Sin registro identificado
-A cargar en flows;28/04/2025;A-0004-00007765;$238.872,15;;;Sin registro identificado
-A cargar en flows;14/07/2025;A-0004-00007904;$511.830,00;;;Sin registro identificado
-A cargar en flows;16/10/2025;A-0004-00008086;$555.390,00;;;Sin registro identificado
-A cargar en flows;25/11/2025;A-0004-00008154;$1.054.515,00;;;Sin registro identificado
-A cargar en flows;03/09/2026;A-0004-00008625;$1.680.544,80;;;Sin registro identificado
-A cargar en flows;03/09/2026;A-0004-00008627;$329.424,00;;;Sin registro identificado
+Factura FIFO;03/09/2026;A-0004-00008625;$1.680.544,80;;$1.680.544,80;Sin registro identificado en flows · Impaga: integra el saldo a pagar
+Factura FIFO;03/09/2026;A-0004-00008627;$329.424,00;;$329.424,00;Sin registro identificado en flows · Impaga: integra el saldo a pagar
+A cargar en flows;10/04/2025;A-0004-00007732;$1.194.360,75;;;Sin cargo en flows · Cancelada por recibo 00003882 del estado, verificado en flows (ID 11487)
+A cargar en flows;28/04/2025;A-0004-00007765;$238.872,15;;;Sin cargo en flows · Cancelada por recibo 00003882 del estado, verificado en flows (ID 11487)
+A cargar en flows;14/07/2025;A-0004-00007904;$511.830,00;;;Sin cargo en flows · Cancelada por recibo 00004079 del estado, verificado en flows (ID 13840)
+A cargar en flows;16/10/2025;A-0004-00008086;$555.390,00;;;Sin cargo en flows · Cancelada por recibo 00004079, 00004119 del estado, verificado en flows (ID 13840, ID 14748)
+A cargar en flows;25/11/2025;A-0004-00008154;$1.054.515,00;;;Sin cargo en flows · Cancelada por recibo 00004119, 00004213 del estado, verificado en flows (ID 14748, ID 19698)
+A cargar en flows;03/09/2026;A-0004-00008625;$1.680.544,80;;;Sin registro identificado en flows · Impaga: integra el saldo a pagar
+A cargar en flows;03/09/2026;A-0004-00008627;$329.424,00;;;Sin registro identificado en flows · Impaga: integra el saldo a pagar

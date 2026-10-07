@@ -29,7 +29,7 @@ FROM test9000.registrocab rc
 JOIN test9000.statusflows sf ON sf.id = rc.statusflowid AND sf.categid = rc.flowid
 JOIN test9000.statuses s ON s.id = sf.statusid
 JOIN test9000.categorias f ON f.id = rc.flowid
-WHERE ((rc.flowid = 10303 AND s.id = 1368) OR rc.flowid = 10150)
+WHERE ((rc.flowid = 10303 AND s.id = 1368) OR rc.flowid = 10150{extra_flows})
   AND rc.fecha IS NOT NULL
   AND EXISTS (
       SELECT 1 FROM test9000.categoriasperfiles cp
@@ -50,14 +50,16 @@ def company(reference):
     return 'Avanzia' if avanzia else 'Condiseño'
 
 
-def fetch_data():
+def fetch_data(extra_flows=()):
+    flows = {int(f) for f in extra_flows}
+    sql = QUERY.format(extra_flows=''.join(f' OR rc.flowid = {f}' for f in sorted(flows)))
     with live_connection() as conn:
-        records = query(conn, QUERY)
+        records = query(conn, sql)
         generated = query(conn, "SELECT to_char(CURRENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI TZ') AS fecha")[0]['fecha']
     rows = []
     for r in records:
         invoice = r['flowid'] == INVOICE_FLOW and r['statusid'] == INVOICE_STATUS
-        if not invoice and r['flowid'] != CASH_OUTFLOW:
+        if not invoice and r['flowid'] not in {CASH_OUTFLOW} | flows:
             raise ValueError(f"Movimiento fuera del alcance: {r['id']}")
         amount = int((Decimal(r['importe']) * 100).quantize(Decimal('1')))
         rows.append(dict(

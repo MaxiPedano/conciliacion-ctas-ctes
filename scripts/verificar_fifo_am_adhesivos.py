@@ -26,10 +26,34 @@ class AMAdhesivosTests(unittest.TestCase):
         self.assertEqual(sum(f['importe'] for f in missing), 556493670)
         self.assertEqual(self.by_number['00008438']['delta'], -178)
         self.assertEqual(self.by_number['00008265']['idsys'], '19697')
-        self.assertEqual([p['num'] for p in self.payments if not p['idsys']],
-                         ['00003882', '00004079', '00004119'])
+        self.assertEqual([p['num'] for p in self.payments if not p['idsys']], [])
         payment = next(p for p in self.payments if p['num'] == '00004305')
         self.assertEqual(payment['local']['payments'] - payment['importe'], -178)
+
+    def test_recibos_identificados_en_11332_sin_duplicacion(self):
+        transfers = {p['num']: p['local'] for p in self.payments
+                     if p.get('local') and p['local'].get('flowid') == 11332}
+        self.assertEqual({n: r['id'] for n, r in transfers.items()},
+                         {'00003882': '11487', '00004079': '13840', '00004119': '14748'})
+        self.assertEqual(sum(r['payments'] for r in transfers.values()), 355496790)
+        self.assertEqual(sum(p['importe'] for p in self.payments
+                             if p['num'] in transfers), 355494790)
+        forced = next(p for p in self.payments if p['num'] == '00004079')
+        self.assertEqual(forced['local']['payments'] - forced['importe'], 2000)
+        self.assertTrue(all(r['provider'] == '698' for r in transfers.values()))
+
+    def test_cuenta_corriente_cierra_sin_11332(self):
+        rows = load_source()['rows']
+        ctacte = sum(r['charges'] - r['payments'] for r in rows if r['flowid'] in (10303, 10150))
+        self.assertEqual(ctacte, 0)
+        fuera = sum(r['charges'] - r['payments'] for r in rows if r['flowid'] == 11332)
+        self.assertEqual(fuera, -355496790)
+        canceladas = [f['num'].split('-')[-1] for f in self.invoices
+                      if not f['idsys'] and f['por'] and all(p['idsys'] for p, _ in f['por'])]
+        self.assertEqual(sorted(canceladas), ['00007732', '00007765', '00007904',
+                                              '00008086', '00008154'])
+        impagas = [f['num'].split('-')[-1] for f in self.invoices if not f['por']]
+        self.assertEqual(sorted(impagas), ['00008625', '00008627'])
 
 
 if __name__ == '__main__':
